@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2013, 2015 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012-2013 The Linux Foundation. All rights reserved.
  *
  * Previously licensed under the ISC license by Qualcomm Atheros, Inc.
  *
@@ -443,10 +443,7 @@ VOS_STATUS vos_timer_init_debug( vos_timer_t *timer, VOS_TIMER_TYPE timerType,
    // set the various members of the timer structure
    // with arguments passed or with default values
    spin_lock_init(&timer->platformInfo.spinlock);
-   if (VOS_TIMER_TYPE_SW == timerType)
-      init_timer_deferrable(&(timer->platformInfo.Timer));
-   else
-      init_timer(&(timer->platformInfo.Timer));
+   init_timer(&(timer->platformInfo.Timer));
    timer->platformInfo.Timer.function = vos_linux_timer_callback;
    timer->platformInfo.Timer.data = (unsigned long)timer;
    timer->callback = callback;
@@ -474,10 +471,7 @@ VOS_STATUS vos_timer_init( vos_timer_t *timer, VOS_TIMER_TYPE timerType,
    // set the various members of the timer structure
    // with arguments passed or with default values
    spin_lock_init(&timer->platformInfo.spinlock);
-   if (VOS_TIMER_TYPE_SW == timerType)
-      init_timer_deferrable(&(timer->platformInfo.Timer));
-   else
-      init_timer(&(timer->platformInfo.Timer));
+   init_timer(&(timer->platformInfo.Timer));
    timer->platformInfo.Timer.function = vos_linux_timer_callback;
    timer->platformInfo.Timer.data = (unsigned long)timer;
    timer->callback = callback;
@@ -544,7 +538,6 @@ VOS_STATUS vos_timer_destroy ( vos_timer_t *timer )
    {
       VOS_TRACE(VOS_MODULE_ID_VOSS, VOS_TRACE_LEVEL_ERROR,
                 "%s: Cannot destroy uninitialized timer",__func__);
-      VOS_ASSERT(0);
       return VOS_STATUS_E_INVAL;
    }
 
@@ -620,7 +613,6 @@ VOS_STATUS vos_timer_destroy ( vos_timer_t *timer )
    {
       VOS_TRACE(VOS_MODULE_ID_VOSS, VOS_TRACE_LEVEL_ERROR,
                 "%s: Cannot destroy uninitialized timer",__func__);
-      VOS_ASSERT(0);
       return VOS_STATUS_E_INVAL;
    }
    spin_lock_irqsave( &timer->platformInfo.spinlock,flags );

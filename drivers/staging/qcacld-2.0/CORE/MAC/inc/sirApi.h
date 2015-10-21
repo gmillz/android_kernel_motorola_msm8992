@@ -60,6 +60,9 @@
 #define P2P_SEARCH_DWELL_TIME_INCREASE   20
 #define P2P_SOCIAL_CHANNELS              3
 
+// Maximum scan duration before timeout
+#define SIR_HW_DEF_SCAN_MAX_DURATION     30000 /* 30 secs */
+
 /* Max number of channels are 165, but to access 165th element of array,
  *array of 166 is required.
  */
@@ -3496,7 +3499,6 @@ typedef struct sSirSmeAddStaSelfReq
     tANI_U32        type;
     tANI_U32        subType;
     tANI_U8         sessionId;
-    tANI_U16        pkt_err_disconn_th;
 }tSirSmeAddStaSelfReq, *tpSirSmeAddStaSelfReq;
 
 typedef struct sSirSmeDelStaSelfReq
@@ -4675,6 +4677,9 @@ typedef struct sSirChanChangeRequest
     tANI_U8      targetChannel;
     tANI_U8      cbMode;
     tANI_U8      bssid[VOS_MAC_ADDR_SIZE];
+    tANI_U32     dot11mode;
+    tSirMacRateSet      operational_rateset;
+    tSirMacRateSet      extended_rateset;
 }tSirChanChangeRequest, *tpSirChanChangeRequest;
 
 typedef struct sSirChanChangeResponse
@@ -4761,6 +4766,7 @@ typedef struct sSirDfsCsaIeRequest
     tANI_U8  targetChannel;
     tANI_U8  csaIeRequired;
     tANI_U8  bssid[VOS_MAC_ADDR_SIZE];
+    u_int8_t  ch_bandwidth;
 }tSirDfsCsaIeRequest, *tpSirDfsCsaIeRequest;
 
 /* Indication from lower layer indicating the completion of first beacon send
@@ -5616,5 +5622,31 @@ typedef struct sAniGetLinkStatus
 
 /* Max number of rates allowed in Supported Rates IE */
 #define MAX_NUM_SUPPORTED_RATES (8)
+
+/**
+ * struct sir_sme_ext_change_chan_req - channel change request
+ * @message_type: message id
+ * @length: msg length
+ * @new_channel: new channel
+ * @session_id: session id
+ */
+struct sir_sme_ext_cng_chan_req
+{
+	uint16_t  message_type; /* eWNI_SME_EXT_CHANGE_CHANNEL */
+	uint16_t  length;
+	uint32_t  new_channel;
+	uint8_t   session_id;
+};
+
+/**
+ * struct sir_sme_ext_change_chan_ind.
+ * @session_id: session id
+ * @new_channel: new channel to change
+ */
+struct sir_sme_ext_cng_chan_ind
+{
+	uint8_t  session_id;
+	uint8_t  new_channel;
+};
 
 #endif /* __SIR_API_H */

@@ -73,6 +73,7 @@
 
 #include "sapInternal.h"
 #include "smeInside.h"
+#include "regdomain_common.h"
 
 /*----------------------------------------------------------------------------
  * Preprocessor Definitions and Constants
@@ -1539,6 +1540,10 @@ WLANSAP_SetChannelChangeWithCsa(v_PVOID_t pvosGCtx, v_U32_t targetChannel)
     tWLAN_SAPEvent sapEvent;
     tpAniSirGlobal pMac = NULL;
     v_PVOID_t hHal = NULL;
+#ifdef FEATURE_WLAN_MCC_TO_SCC_SWITCH
+    bool valid;
+#endif
+    tSmeConfigParams  sme_config;
 
     sapContext = VOS_GET_SAP_CB( pvosGCtx );
     if (NULL == sapContext)
@@ -1558,29 +1563,30 @@ WLANSAP_SetChannelChangeWithCsa(v_PVOID_t pvosGCtx, v_U32_t targetChannel)
     pMac = PMAC_STRUCT( hHal );
 
     /*
-     * Validate if the new target channel is a valid
-     * 5 Ghz Channel. We prefer to move to another
-     * channel in 5 Ghz band.
-     */
-    if ( (targetChannel < rfChannels[RF_CHAN_36].channelNum)
-                             ||
-         (targetChannel > rfChannels[RF_CHAN_165].channelNum) )
-    {
-        VOS_TRACE( VOS_MODULE_ID_SAP, VOS_TRACE_LEVEL_ERROR,
-                   "%s: Invalid Channel = %d passed,Channel not in 5GHz band",
-                    __func__, targetChannel);
-
-        return VOS_STATUS_E_FAULT;
-    }
-
-    /*
      * Now, validate if the passed channel is valid in the
      * current regulatory domain.
      */
-    if ( (vos_nv_getChannelEnabledState(targetChannel) == NV_CHANNEL_ENABLE)
+    if ( sapContext->channel != targetChannel &&
+         ((vos_nv_getChannelEnabledState(targetChannel) == NV_CHANNEL_ENABLE)
                                     ||
-         (vos_nv_getChannelEnabledState(targetChannel) == NV_CHANNEL_DFS) )
+         (vos_nv_getChannelEnabledState(targetChannel) == NV_CHANNEL_DFS &&
+          !vos_concurrent_open_sessions_running())) )
     {
+#ifdef FEATURE_WLAN_MCC_TO_SCC_SWITCH
+         /*
+          * validate target channel switch w.r.t various concurrency rules set.
+          */
+         valid = sme_validate_sap_channel_switch(VOS_GET_HAL_CB(sapContext->pvosGCtx),
+                  targetChannel, sapContext->csrRoamProfile.phyMode,
+                  sapContext->cc_switch_mode, sapContext->sessionId);
+         if (!valid)
+         {
+             VOS_TRACE(VOS_MODULE_ID_SAP, VOS_TRACE_LEVEL_ERROR,
+                       FL("Channel switch to %u is not allowed due to concurrent channel interference"),
+                          targetChannel);
+             return VOS_STATUS_E_FAULT;
+         }
+#endif
         /*
          * Post a CSA IE request to SAP state machine with
          * target channel information and also CSA IE required
@@ -1589,6 +1595,19 @@ WLANSAP_SetChannelChangeWithCsa(v_PVOID_t pvosGCtx, v_U32_t targetChannel)
          */
          if (eSAP_STARTED == sapContext->sapsMachine)
          {
+             /*
+              * currently OBSS scan is done in hostapd, so to avoid
+              * SAP coming up in HT40 on channel switch we are
+              * disabling channel bonding in 2.4ghz.
+              */
+             if (targetChannel <= RF_CHAN_14)
+             {
+                 sme_GetConfigParam(pMac, &sme_config);
+                 sme_config.csrConfig.channelBondingMode24GHz =
+                                         eCSR_INI_SINGLE_CHANNEL_CENTERED;
+                 sme_UpdateConfig(pMac, &sme_config);
+             }
+
              /*
               * Copy the requested target channel
               * to sap context.
@@ -1609,6 +1628,8 @@ WLANSAP_SetChannelChangeWithCsa(v_PVOID_t pvosGCtx, v_U32_t targetChannel)
               * request was issued.
               */
              pMac->sap.SapDfsInfo.sap_radar_found_status = VOS_TRUE;
+             pMac->sap.SapDfsInfo.cac_state = eSAP_DFS_DO_NOT_SKIP_CAC;
+             sap_CacResetNotify(hHal);
 
              /*
               * Post the eSAP_DFS_CHNL_SWITCH_ANNOUNCEMENT_START
@@ -2819,7 +2840,7 @@ VOS_STATUS WLANSAP_DeRegisterMgmtFrame
   SIDE EFFECTS
 ============================================================================*/
 VOS_STATUS
-WLANSAP_ChannelChangeRequest(v_PVOID_t pSapCtx, tANI_U8 tArgetChannel)
+WLANSAP_ChannelChangeRequest(v_PVOID_t pSapCtx, uint8_t target_channel)
 {
     ptSapContext sapContext = NULL;
     eHalStatus halStatus = eHAL_STATUS_FAILURE;
@@ -2840,10 +2861,14 @@ WLANSAP_ChannelChangeRequest(v_PVOID_t pSapCtx, tANI_U8 tArgetChannel)
                    "%s: Invalid HAL pointer from pvosGCtx", __func__);
         return VOS_STATUS_E_FAULT;
     }
+    sapContext->csrRoamProfile.ChannelInfo.ChannelList[0] = target_channel;
+    /* Update the channel as this will be used to
+     * send event to supplicant
+     */
+    sapContext->channel = target_channel;
 
     halStatus = sme_RoamChannelChangeReq( hHal, sapContext->bssid,
-       tArgetChannel,
-       sapConvertSapPhyModeToCsrPhyMode(sapContext->csrRoamProfile.phyMode) );
+                                        &sapContext->csrRoamProfile);
 
     if (halStatus == eHAL_STATUS_SUCCESS)
     {
@@ -2951,6 +2976,9 @@ WLANSAP_DfsSendCSAIeRequest(v_PVOID_t pSapCtx)
     eHalStatus halStatus = eHAL_STATUS_FAILURE;
     v_PVOID_t hHal = NULL;
     tpAniSirGlobal pMac = NULL;
+    u_int32_t cbmode, vht_ch_width;
+    u_int8_t ch_bandwidth;
+
     sapContext = (ptSapContext)pSapCtx;
 
     if ( NULL == sapContext )
@@ -2967,12 +2995,43 @@ WLANSAP_DfsSendCSAIeRequest(v_PVOID_t pSapCtx)
                    "%s: Invalid HAL pointer from pvosGCtx", __func__);
         return VOS_STATUS_E_FAULT;
     }
+
     pMac = PMAC_STRUCT( hHal );
+
+    vht_ch_width = pMac->sap.SapDfsInfo.new_chanWidth;
+    sme_SelectCBMode(hHal,
+                     sapContext->csrRoamProfile.phyMode,
+                     pMac->sap.SapDfsInfo.target_channel);
+
+    cbmode = (pMac->sap.SapDfsInfo.target_channel <= 14) ?
+                 pMac->roam.configParam.channelBondingMode24GHz :
+                 pMac->roam.configParam.channelBondingMode5GHz;
+    if (pMac->sap.SapDfsInfo.target_channel <= 14 ||
+        vht_ch_width == eHT_CHANNEL_WIDTH_40MHZ ||
+        vht_ch_width == eHT_CHANNEL_WIDTH_20MHZ)
+    {
+        switch (cbmode)
+        {
+          case eCSR_INI_DOUBLE_CHANNEL_HIGH_PRIMARY:
+              ch_bandwidth = BW40_HIGH_PRIMARY;
+              break;
+          case eCSR_INI_DOUBLE_CHANNEL_LOW_PRIMARY:
+              ch_bandwidth = BW40_LOW_PRIMARY;
+              break;
+          case eCSR_INI_SINGLE_CHANNEL_CENTERED:
+          default:
+              ch_bandwidth = BW20;
+              break;
+        }
+    }
+    else
+        ch_bandwidth = BW80;
 
     halStatus = sme_RoamCsaIeRequest(hHal,
                                      sapContext->bssid,
                                      pMac->sap.SapDfsInfo.target_channel,
-                                     pMac->sap.SapDfsInfo.csaIERequired);
+                                     pMac->sap.SapDfsInfo.csaIERequired,
+                                     ch_bandwidth);
 
     if (halStatus == eHAL_STATUS_SUCCESS)
     {
@@ -3335,8 +3394,6 @@ WLANSAP_UpdateSapConfigAddIE(tsap_Config_t *pConfig,
     default:
             VOS_TRACE(VOS_MODULE_ID_SME, VOS_TRACE_LEVEL_INFO,
                 FL("No matching buffer type %d"), updateType);
-            if (pBuffer != NULL)
-                vos_mem_free(pBuffer);
         break;
     }
 

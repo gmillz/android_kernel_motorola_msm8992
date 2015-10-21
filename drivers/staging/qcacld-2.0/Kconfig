@@ -46,3 +46,4 @@ config QCOM_LTE_COEX
 	default n
 
 endif # QCA_CLD_WLAN
+

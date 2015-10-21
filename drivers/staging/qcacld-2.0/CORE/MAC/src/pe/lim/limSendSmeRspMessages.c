@@ -507,21 +507,6 @@ limSendSmeJoinReassocRsp(tpAniSirGlobal pMac, tANI_U16 msgType,
                 psessionEntry->assocRsp = NULL;
             }
 
-#ifdef WLAN_FEATURE_VOWIFI_11R
-            if(psessionEntry->ricData != NULL)
-            {
-                vos_mem_free( psessionEntry->ricData);
-                psessionEntry->ricData = NULL;
-            }
-#endif
-
-#ifdef FEATURE_WLAN_ESE
-            if(psessionEntry->tspecIes != NULL)
-            {
-                vos_mem_free(psessionEntry->tspecIes);
-                psessionEntry->tspecIes = NULL;
-            }
-#endif
         }
     }
 
@@ -1378,8 +1363,7 @@ limSendSmeDisassocNtf(tpAniSirGlobal pMac,
     switch (disassocTrigger)
     {
         case eLIM_PEER_ENTITY_DISASSOC:
-            if (reasonCode != eSIR_SME_STA_NOT_ASSOCIATED)
-                return;
+            return;
 
         case eLIM_HOST_DISASSOC:
             /**

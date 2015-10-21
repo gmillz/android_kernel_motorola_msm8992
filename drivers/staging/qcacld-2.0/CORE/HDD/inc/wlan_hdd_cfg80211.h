@@ -100,6 +100,12 @@
 #endif
 #endif
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) \
+            || defined(BACKPORTED_CHANNEL_SWITCH_PRESENT)
+#define CHANNEL_SWITCH_SUPPORTED
+#endif
+
+
 #define MAX_CHANNEL (MAX_2_4GHZ_CHANNEL + NUM_5GHZ_CHANNELS)
 
 typedef struct {
@@ -174,6 +180,13 @@ enum qca_nl80211_vendor_subcmds {
 
     /* Get Concurrency Matrix */
     QCA_NL80211_VENDOR_SUBCMD_GET_CONCURRENCY_MATRIX = 42,
+
+    /* Off loaded DFS events */
+    QCA_NL80211_VENDOR_SUBCMD_DFS_OFFLOAD_CAC_STARTED = 56,
+    QCA_NL80211_VENDOR_SUBCMD_DFS_OFFLOAD_CAC_FINISHED = 57,
+    QCA_NL80211_VENDOR_SUBCMD_DFS_OFFLOAD_CAC_ABORTED = 58,
+    QCA_NL80211_VENDOR_SUBCMD_DFS_OFFLOAD_CAC_NOP_FINISHED = 59,
+    QCA_NL80211_VENDOR_SUBCMD_DFS_OFFLOAD_RADAR_DETECTED = 60,
 };
 
 enum qca_nl80211_vendor_subcmds_index {
@@ -215,6 +228,12 @@ enum qca_nl80211_vendor_subcmds_index {
 #endif /* WLAN_FEATURE_LINK_LAYER_STATS */
     /* EXT TDLS */
     QCA_NL80211_VENDOR_SUBCMD_TDLS_STATE_CHANGE_INDEX,
+    /* DFS */
+    QCA_NL80211_VENDOR_SUBCMD_DFS_OFFLOAD_CAC_STARTED_INDEX,
+    QCA_NL80211_VENDOR_SUBCMD_DFS_OFFLOAD_CAC_FINISHED_INDEX,
+    QCA_NL80211_VENDOR_SUBCMD_DFS_OFFLOAD_CAC_ABORTED_INDEX,
+    QCA_NL80211_VENDOR_SUBCMD_DFS_OFFLOAD_CAC_NOP_FINISHED_INDEX,
+    QCA_NL80211_VENDOR_SUBCMD_DFS_OFFLOAD_RADAR_DETECTED_INDEX,
 };
 
 /* EXT TDLS */
@@ -870,7 +889,6 @@ enum qca_wlan_vendor_attr_get_concurrency_matrix {
 #define WIFI_FEATURE_EPR                0x4000   /* Enhanced power reporting */
 #define WIFI_FEATURE_AP_STA             0x8000   /* Support for AP STA
                                                     Concurrency */
-#define WIFI_FEATURE_LINK_LAYER_STATS   0x10000  /* Link layer stats */
 /* Add more features here */
 
 
@@ -941,8 +959,8 @@ void wlan_hdd_linux_reg_notifier(struct wiphy *wiphy, struct regulatory_request 
 int wlan_hdd_linux_reg_notifier(struct wiphy *wiphy, struct regulatory_request *request);
 #endif
 
-extern v_VOID_t hdd_connSetConnectionState(hdd_adapter_t *pAdapter,
-                                            eConnectionState connState);
+extern v_VOID_t hdd_connSetConnectionState( hdd_station_ctx_t *pHddStaCtx,
+                                        eConnectionState connState );
 VOS_STATUS wlan_hdd_validate_operation_channel(hdd_adapter_t *pAdapter,int channel);
 #ifdef FEATURE_WLAN_TDLS
 int wlan_hdd_cfg80211_send_tdls_discover_req(struct wiphy *wiphy,

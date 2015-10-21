@@ -778,7 +778,7 @@ static eHalStatus hdd_wmm_sme_callback (tHalHandle hHal,
       VOS_TRACE( VOS_MODULE_ID_HDD, WMM_TRACE_LEVEL_ERROR,
                  "%s: Setup failed, not a QoS AP",
                  __func__);
-      if (HDD_WMM_HANDLE_IMPLICIT == pQosContext->handle)
+      if (!HDD_WMM_HANDLE_IMPLICIT == pQosContext->handle)
       {
          VOS_TRACE(VOS_MODULE_ID_HDD, WMM_TRACE_LEVEL_INFO,
                    "%s: Explicit Qos, notifying user space",
@@ -1576,10 +1576,7 @@ VOS_STATUS hdd_wmm_adapter_close ( hdd_adapter_t* pAdapter )
 #ifdef FEATURE_WLAN_ESE
       hdd_wmm_disable_inactivity_timer(pQosContext);
 #endif
-      if (pQosContext->handle == HDD_WMM_HANDLE_IMPLICIT
-          && pQosContext->magic == HDD_WMM_CTX_MAGIC)
-          vos_flush_work(&pQosContext->wmmAcSetupImplicitQos);
-
+      vos_flush_work(&pQosContext->wmmAcSetupImplicitQos);
       hdd_wmm_free_context(pQosContext);
    }
 

@@ -611,7 +611,8 @@ void sme_FTReset(tHalHandle hHal, tANI_U32 sessionId)
                 pSession->ftSmeContext.psavedFTPreAuthRsp);
 #endif
           vos_mem_free(pSession->ftSmeContext.psavedFTPreAuthRsp);
-          pSession->ftSmeContext.psavedFTPreAuthRsp = NULL;
+          vos_mem_set(pSession->ftSmeContext.psavedFTPreAuthRsp,
+                        sizeof(tSirFTPreAuthRsp), 0);
       }
       pSession->ftSmeContext.setFTPreAuthState = VOS_FALSE;
       pSession->ftSmeContext.setFTPTKState = VOS_FALSE;

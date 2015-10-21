@@ -60,7 +60,7 @@
 // Temporarily (maybe for all of Alpha-1), assuming TIM = 0
 //
 
-tANI_U8 P2pOui[] = {0x50, 0x6F, 0x9A, 0x9};
+const tANI_U8 P2pOui[] = {0x50, 0x6F, 0x9A, 0x9};
 
 
 tSirRetStatus schGetP2pIeOffset(tANI_U8 *pExtraIe, tANI_U32 extraIeLen, tANI_U16 *pP2pIeOffset)
@@ -311,6 +311,12 @@ tSirRetStatus schSetFixedBeaconFields(tpAniSirGlobal pMac,tpPESession psessionEn
      * Initialize the 'new' fields at the end of the beacon
      */
 
+    if ((psessionEntry->limSystemRole == eLIM_AP_ROLE) &&
+       psessionEntry->dfsIncludeChanSwIe == VOS_TRUE) {
+           populate_dot_11_f_ext_chann_switch_ann(pMac,
+                           &pBcn2->ext_chan_switch_ann,
+                           psessionEntry);
+    }
 
     PopulateDot11fCountry( pMac, &pBcn2->Country, psessionEntry);
     if(pBcn1->Capabilities.qos)
@@ -595,6 +601,16 @@ void limUpdateProbeRspTemplateIeBitmapBeacon2(tpAniSirGlobal pMac,
         vos_mem_copy((void *)&prb_rsp->ChanSwitchAnn, (void *)&beacon2->ChanSwitchAnn,
                      sizeof(beacon2->ChanSwitchAnn));
 
+    }
+
+    /* EXT Channel Switch Announcement CHNL_EXTENDED_SWITCH_ANN_EID*/
+    if (beacon2->ext_chan_switch_ann.present)
+    {
+        SetProbeRspIeBitmap(DefProbeRspIeBitmap,
+               SIR_MAC_CHNL_EXTENDED_SWITCH_ANN_EID);
+        vos_mem_copy((void *)&prb_rsp->ext_chan_switch_ann,
+            (void *)&beacon2->ext_chan_switch_ann,
+             sizeof(beacon2->ext_chan_switch_ann));
     }
     /* ERP information */
     if(beacon2->ERPInfo.present)

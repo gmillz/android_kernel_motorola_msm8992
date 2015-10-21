@@ -1117,10 +1117,8 @@ endif
 ifeq ($(CONFIG_HIF_USB), 1)
 CDEFINES += -DHIF_USB
 CDEFINES += -DCONFIG_HL_SUPPORT
-endif
-
-#Enable FW logs through ini
 CDEFINES += -DCONFIG_FW_LOGS_BASED_ON_INI
+endif
 
 #Enable pci read/write config functions
 ifeq ($(CONFIG_ATH_PCI), 1)
@@ -1204,9 +1202,6 @@ ifeq ($(CONFIG_SMP),y)
 CDEFINES += -DQCA_CONFIG_SMP
 endif
 
-#Enable Channel Matrix restriction for all targets
-CDEFINES += -DWLAN_ENABLE_CHNL_MATRIX_RESTRICTION
-
 #features specific to mdm9630
 ifeq ($(CONFIG_ARCH_MDM9630), y)
 
@@ -1265,11 +1260,6 @@ ifeq ($(CONFIG_FEATURE_SECURE_FIRMWARE), 1)
 CDEFINES += -DFEATURE_SECURE_FIRMWARE
 endif
 
-#Enable/disable FW hash check for secure firmware feature
-ifeq ($(CONFIG_CLD_DEBUG), y)
-CDEFINES += -DFEATURE_FW_HASH_CHECK
-endif
-
 ifeq ($(CONFIG_ATH_PCIE_ACCESS_DEBUG), 1)
 CDEFINES += -DCONFIG_ATH_PCIE_ACCESS_DEBUG
 endif
@@ -1308,3 +1298,4 @@ endif
 # Module information used by KBuild framework
 obj-$(CONFIG_QCA_CLD_WLAN) += $(MODNAME).o
 $(MODNAME)-y := $(OBJS)
+

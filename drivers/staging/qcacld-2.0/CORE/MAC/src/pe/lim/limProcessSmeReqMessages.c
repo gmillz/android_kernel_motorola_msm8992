@@ -57,6 +57,8 @@
 #include "limApi.h"
 #include "wmmApsd.h"
 #include "sirMacProtDef.h"
+#include "regdomain_common.h"
+
 
 #include "sapApi.h"
 
@@ -115,6 +117,9 @@ static void limUpdateAddIEBuffer(tpAniSirGlobal pMac,
 static void limProcessModifyAddIEs(tpAniSirGlobal pMac, tANI_U32 *pMsg);
 
 static void limProcessUpdateAddIEs(tpAniSirGlobal pMac, tANI_U32 *pMsg);
+
+static void lim_process_ext_change_channel(tpAniSirGlobal mac_ctx,
+						uint32_t *msg);
 
 void __limProcessSmeAssocCnfNew(tpAniSirGlobal, tANI_U32, tANI_U32 *);
 
@@ -2207,12 +2212,6 @@ __limProcessSmeJoinReq(tpAniSirGlobal pMac, tANI_U32 *pMsgBuf)
         /* Indicate whether spectrum management is enabled*/
         psessionEntry->spectrumMgtEnabled =
            pSmeJoinReq->spectrumMgtIndicator;
-
-        /* Enable the spectrum management if this is a DFS channel */
-        if (psessionEntry->countryInfoPresent &&
-             limIsconnectedOnDFSChannel(psessionEntry->currentOperChannel))
-             psessionEntry->spectrumMgtEnabled = TRUE;
-
         psessionEntry->isOSENConnection =
            pSmeJoinReq->isOSENConnection;
 
@@ -2344,22 +2343,10 @@ __limProcessSmeReassocReq(tpAniSirGlobal pMac, tANI_U32 *pMsgBuf)
 
    if((psessionEntry = peFindSessionByBssid(pMac,pReassocReq->bssDescription.bssId,&sessionId))==NULL)
     {
-	// Because of wrong bssid in ReAssoc request, we are not able to find
-	// pe session in our list of sessions, this is then sent to upper layer
-	// with sme_session id same as in request. Upper layers then cause a
-	// DISASSOC for sme session (wrong, this should not happen)
-	// Hence:
-	// Ideally we should not return error here to upper layer,
-	// since the request was for some other BSSID, session for which is not
-	// present in our sessions array
-
-	// for IR-063901, an old roam command that is somehow coming after
-	// connection is established with a newer AP. Since older AP is already
-	// removed from our list, hence no session is found, causing disconnect
-	// with new AP instead.
         limPrintMacAddr(pMac, pReassocReq->bssDescription.bssId, LOGE);
         limLog(pMac, LOGE, FL("Session does not exist for given bssId"));
-	return;
+        retCode = eSIR_SME_INVALID_PARAMETERS;
+        goto end;
     }
 
 #ifdef FEATURE_WLAN_DIAG_SUPPORT_LIM //FEATURE_WLAN_DIAG_SUPPORT
@@ -2575,11 +2562,6 @@ __limProcessSmeReassocReq(tpAniSirGlobal pMac, tANI_U32 *pMsgBuf)
 
     /* Indicate whether spectrum management is enabled*/
     psessionEntry->spectrumMgtEnabled = pReassocReq->spectrumMgtIndicator;
-
-    /* Enable the spectrum management if this is a DFS channel */
-    if (psessionEntry->countryInfoPresent &&
-             limIsconnectedOnDFSChannel(psessionEntry->currentOperChannel))
-             psessionEntry->spectrumMgtEnabled = TRUE;
 
     psessionEntry->limPrevSmeState = psessionEntry->limSmeState;
     psessionEntry->limSmeState    = eLIM_SME_WT_REASSOC_STATE;
@@ -3062,17 +3044,15 @@ __limProcessSmeDeauthReq(tpAniSirGlobal pMac, tANI_U32 *pMsgBuf)
 
                     break;
                 case eLIM_SME_WT_DEAUTH_STATE:
-                case eLIM_SME_WT_DISASSOC_STATE:
                     /*
-                     * PE Recieved a Deauth/Disassoc frame. Normally it gets
-                     * DEAUTH_CNF/DISASSOC_CNF but it received DEAUTH_REQ. Which
+                     * PE Recieved a Deauth frame. Normally it gets
+                     * DEAUTH_CNF but it received DEAUTH_REQ. Which
                      * means host is also trying to disconnect.
                      * PE can continue processing DEAUTH_REQ and send
                      * the response instead of failing the request.
-                     * SME will anyway ignore DEAUTH_IND/DISASSOC_IND that
-                     * was sent for deauth/disassoc frame.
+                     * SME will anyway ignore DEAUTH_IND that was sent
+                     * for deauth frame.
                      */
-                    psessionEntry->limSmeState = eLIM_SME_WT_DEAUTH_STATE;
                     limLog(pMac, LOG1, FL("Rcvd SME_DEAUTH_REQ while in "
                        "SME_WT_DEAUTH_STATE. "));
                     break;
@@ -5157,7 +5137,6 @@ __limProcessSmeAddStaSelfReq(tpAniSirGlobal pMac, tANI_U32 *pMsgBuf)
    pAddStaSelfParams->sessionId = pSmeReq->sessionId;
    pAddStaSelfParams->type = pSmeReq->type;
    pAddStaSelfParams->subType = pSmeReq->subType;
-   pAddStaSelfParams->pkt_err_disconn_th = pSmeReq->pkt_err_disconn_th;
 
    msg.type = SIR_HAL_ADD_STA_SELF_REQ;
    msg.reserved = 0;
@@ -5790,7 +5769,9 @@ limProcessSmeReqMessages(tpAniSirGlobal pMac, tpSirMsgQ pMsg)
         case eWNI_SME_TKIP_CNTR_MEAS_REQ:
             limProcessTkipCounterMeasures(pMac, pMsgBuf);
             break;
-
+        case eWNI_SME_EXT_CHANGE_CHANNEL:
+            lim_process_ext_change_channel(pMac, pMsgBuf);
+            break;
        case eWNI_SME_HIDE_SSID_REQ:
             __limProcessSmeHideSSID(pMac, pMsgBuf);
             break;
@@ -5979,6 +5960,7 @@ limProcessSmeChannelChangeRequest(tpAniSirGlobal pMac, tANI_U32 *pMsg)
     tpPESession             psessionEntry;
     tANI_U8                 sessionId;  //PE sessionID
     tPowerdBm               maxTxPwr;
+    u_int32_t val = 0;
 #ifdef WLAN_FEATURE_11AC
     tANI_U32 centerChan;
     tANI_U32 chanWidth;
@@ -6097,6 +6079,25 @@ limProcessSmeChannelChangeRequest(tpAniSirGlobal pMac, tANI_U32 *pMsg)
                                   psessionEntry->htSupportedChannelWidthSet;
             psessionEntry->currentOperChannel =
                                   pChannelChangeReq->targetChannel;
+            psessionEntry->limRFBand =
+                                limGetRFBand(psessionEntry->currentOperChannel);
+            // Initialize 11h Enable Flag
+            if (SIR_BAND_5_GHZ == psessionEntry->limRFBand)
+            {
+                if (wlan_cfgGetInt(pMac, WNI_CFG_11H_ENABLED, &val) !=
+                                               eSIR_SUCCESS)
+                    limLog(pMac, LOGP, FL("Fail to get WNI_CFG_11H_ENABLED "));
+            }
+
+            psessionEntry->lim11hEnable = val;
+            psessionEntry->dot11mode = pChannelChangeReq->dot11mode;
+
+            vos_mem_copy((void*)&psessionEntry->rateSet,
+                                (void*)&pChannelChangeReq->operational_rateset,
+                                sizeof(tSirMacRateSet));
+            vos_mem_copy((void*)&psessionEntry->extRateSet,
+                                (void*)&pChannelChangeReq->extended_rateset,
+                                sizeof(tSirMacRateSet));
 
             limSetChannel(pMac, pChannelChangeReq->targetChannel,
                           psessionEntry->htSecondaryChannelOffset,
@@ -6444,6 +6445,59 @@ limProcessUpdateAddIEs(tpAniSirGlobal pMac, tANI_U32 *pMsg)
 }
 
 /**
+ * send_extended_chan_switch_action_frame()- function to send ECSA
+ * action frame for each sta connected to SAP/GO and AP in case of
+ * STA .
+ * @mac_ctx: pointer to global mac structure
+ * @new_channel: new channel to switch to.
+ * @ch_bandwidth: BW of channel to calculate op_class
+ * @session_entry: pe session
+ *
+ * This function is called to send ECSA frame for STA/CLI and SAP/GO.
+ *
+ * Return: void
+ */
+
+static void send_extended_chan_switch_action_frame(tpAniSirGlobal mac_ctx,
+				uint16_t new_channel, uint8_t ch_bandwidth,
+						tpPESession session_entry)
+{
+	uint16_t op_class;
+	uint8_t switch_mode = 0, i;
+	tpDphHashNode psta;
+
+
+	op_class = regdm_get_opclass_from_channel(
+				mac_ctx->scan.countryCodeCurrent,
+				new_channel,
+				ch_bandwidth);
+
+	if (LIM_IS_AP_ROLE(session_entry) &&
+		(mac_ctx->sap.SapDfsInfo.disable_dfs_ch_switch == VOS_FALSE))
+		switch_mode = 1;
+
+	if (LIM_IS_AP_ROLE(session_entry)) {
+		for (i = 0; i < mac_ctx->lim.maxStation; i++) {
+			psta =
+			  session_entry->dph.dphHashTable.pDphNodeArray + i;
+			if (psta && psta->added) {
+				lim_send_extended_chan_switch_action_frame(
+					mac_ctx,
+					psta->staAddr,
+					switch_mode, op_class, new_channel,
+					LIM_MAX_CSA_IE_UPDATES, session_entry);
+			}
+		}
+	} else if (LIM_IS_STA_ROLE(session_entry)) {
+		lim_send_extended_chan_switch_action_frame(mac_ctx,
+					session_entry->bssId,
+					switch_mode, op_class, new_channel,
+					LIM_MAX_CSA_IE_UPDATES, session_entry);
+	}
+
+}
+
+/**
  * limProcessSmeDfsCsaIeRequest()
  *
  *FUNCTION:
@@ -6505,6 +6559,8 @@ limProcessSmeDfsCsaIeRequest(tpAniSirGlobal pMac, tANI_U32 *pMsg)
         psessionEntry->gLimChannelSwitch.switchCount = LIM_MAX_CSA_IE_UPDATES;
         if (pMac->sap.SapDfsInfo.disable_dfs_ch_switch == VOS_FALSE)
             psessionEntry->gLimChannelSwitch.switchMode = 1;
+        psessionEntry->gLimChannelSwitch.secondarySubBand =
+                                         pDfsCsaIeRequest->ch_bandwidth;
 
         /* Validate if SAP is operating HT or VHT
          * mode and set the Channel Switch Wrapper
@@ -6586,7 +6642,6 @@ limProcessSmeDfsCsaIeRequest(tpAniSirGlobal pMac, tANI_U32 *pMsg)
             psessionEntry->gLimWiderBWChannelSwitch.newCenterChanFreq1 = 0;
         }
 #endif
-
         /* Send CSA IE request from here */
         if (schSetFixedBeaconFields(pMac, psessionEntry) != eSIR_SUCCESS)
         {
@@ -6599,10 +6654,56 @@ limProcessSmeDfsCsaIeRequest(tpAniSirGlobal pMac, tANI_U32 *pMsg)
          * the template update
          */
         limSendBeaconInd(pMac, psessionEntry);
-        PELOG1(limLog(pMac, LOG1,
+        limLog(pMac, LOG1,
                    FL(" Updated CSA IE, IE COUNT = %d"),
-                       psessionEntry->gLimChannelSwitch.switchCount );)
+                       psessionEntry->gLimChannelSwitch.switchCount );
+        /* Send ECSA Action frame after updating the beacon */
+        send_extended_chan_switch_action_frame(pMac,
+          psessionEntry->gLimChannelSwitch.primaryChannel,
+            psessionEntry->gLimChannelSwitch.secondarySubBand,
+                                                  psessionEntry);
         psessionEntry->gLimChannelSwitch.switchCount--;
     }
     return;
+}
+
+/**
+ * lim_process_ext_change_channel()- function to send ECSA
+ * action frame for STA/CLI .
+ * @mac_ctx: pointer to global mac structure
+ * @msg: params from sme for new channel.
+ *
+ * This function is called to send ECSA frame for STA/CLI.
+ *
+ * Return: void
+ */
+
+static void lim_process_ext_change_channel(tpAniSirGlobal mac_ctx,
+							uint32_t *msg)
+{
+	struct sir_sme_ext_cng_chan_req *ext_chng_channel =
+				(struct sir_sme_ext_cng_chan_req *) msg;
+	tpPESession session_entry = NULL;
+
+	if (NULL == msg) {
+		limLog(mac_ctx, LOGE, FL("Buffer is Pointing to NULL"));
+		return;
+	}
+	session_entry =
+		pe_find_session_by_sme_session_id(mac_ctx,
+						ext_chng_channel->session_id);
+	if (NULL == session_entry) {
+		limLog(mac_ctx, LOGE,
+			FL("Session not found for given session %d"),
+			ext_chng_channel->session_id);
+		return;
+	}
+	if (LIM_IS_AP_ROLE(session_entry)) {
+		limLog(mac_ctx, LOGE,
+			FL("not an STA/CLI session"));
+		return;
+	}
+	send_extended_chan_switch_action_frame(mac_ctx,
+			ext_chng_channel->new_channel,
+				0, session_entry);
 }

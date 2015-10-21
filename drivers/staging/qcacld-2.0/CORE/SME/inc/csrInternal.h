@@ -675,7 +675,6 @@ typedef struct tagCsrConfig
     tANI_BOOLEAN  isRoamOffloadEnabled;
 #endif
     tANI_BOOLEAN obssEnabled;
-    v_U16_t pkt_err_disconn_th;
 }tCsrConfig;
 
 typedef struct tagCsrChannelPowerInfo
@@ -797,8 +796,11 @@ typedef struct tagCsrScanStruct
     tANI_S8     inScanResultBestAPRssi;
     eCsrBand  scanBandPreference;  //This defines the band perference for scan
     csrScanCompleteCallback callback11dScanDone;
-    bool fcc_constraint;
 }tCsrScanStruct;
+
+
+
+
 
 //Save the connected information. This structure + connectedProfile
 //should contain all information about the connection
@@ -1000,6 +1002,7 @@ typedef struct tagCsrRoamSession
     uint8_t join_bssid_count; /* This count represents the number of
                                * bssid's we are trying to join.
                                */
+    bool ch_switch_in_progress;
 } tCsrRoamSession;
 
 typedef struct tagCsrRoamStruct
@@ -1496,7 +1499,7 @@ tANI_BOOLEAN csrRoamIsStaMode(tpAniSirGlobal pMac, tANI_U32 sessionId);
 
 /* Post Channel Change Indication */
 eHalStatus csrRoamChannelChangeReq(tpAniSirGlobal pMac, tCsrBssid bssid,
-                        tANI_U8 targetChannel, tANI_U8 cbMode);
+                        tANI_U8 cbMode,  tCsrRoamProfile *pprofile);
 
 /* Post Beacon Tx Start Indication */
 eHalStatus csrRoamStartBeaconReq( tpAniSirGlobal pMac,
@@ -1504,7 +1507,8 @@ eHalStatus csrRoamStartBeaconReq( tpAniSirGlobal pMac,
 
 eHalStatus
 csrRoamSendChanSwIERequest(tpAniSirGlobal pMac, tCsrBssid bssid,
-                     tANI_U8 targetChannel, tANI_U8 csaIeReqd);
+                     tANI_U8 targetChannel, tANI_U8 csaIeReqd,
+                     u_int8_t ch_bandwidth);
 
 /*----------------------------------------------------------------------------
  \fn csrRoamModifyAddIEs

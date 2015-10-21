@@ -3717,7 +3717,7 @@ eHalStatus sme_set_auto_shutdown_timer(tHalHandle hHal, tANI_U32 timer_value);
 #endif
 
 eHalStatus sme_RoamChannelChangeReq( tHalHandle hHal, tCsrBssid bssid,
-                                tANI_U8 targetChannel, eCsrPhyMode phyMode );
+                                tCsrRoamProfile *pprofile);
 
 eHalStatus sme_RoamStartBeaconReq( tHalHandle hHal,
                    tCsrBssid bssid, tANI_U8 dfsCacWaitStatus);
@@ -3727,10 +3727,12 @@ eHalStatus sme_RoamStartBeaconReq( tHalHandle hHal,
    \param hHal - The handle returned by macOpen
    \param pDfsCsaReq - CSA IE request
    \param bssid - SAP bssid
+   \param ch_bandwidth - Channel offset
    \return eHalStatus
 ---------------------------------------------------------------------------*/
 eHalStatus sme_RoamCsaIeRequest(tHalHandle hHal, tCsrBssid bssid,
-                  tANI_U8 targetChannel, tANI_U8 csaIeReqd);
+                  tANI_U8 targetChannel, tANI_U8 csaIeReqd,
+                  u_int8_t ch_bandwidth);
 
 /* ---------------------------------------------------------------------------
     \fn sme_InitThermalInfo
@@ -4120,14 +4122,12 @@ eHalStatus sme_SetLedFlashing (tHalHandle hHal, tANI_U8 type,
     \return eHalStatus
     -------------------------------------------------------------------------*/
 eHalStatus sme_handle_dfs_chan_scan(tHalHandle hHal, tANI_U8 dfs_flag);
+eHalStatus sme_ext_change_channel(tHalHandle hHal, uint32_t channel,
+						uint8_t session_id);
 
-eHalStatus sme_update_nss(tHalHandle h_hal, uint8_t nss);
-
-uint8_t    sme_is_any_session_in_connected_state(tHalHandle h_hal);
-
-bool smeNeighborRoamIsHandoffInProgress(tHalHandle hHal, tANI_U8 sessionId);
-
-eHalStatus sme_disable_non_fcc_channel(tHalHandle hHal,
-				       bool fcc_constraint);
-
+bool sme_validate_sap_channel_switch(tHalHandle hal,
+					uint16_t sap_ch,
+					eCsrPhyMode sap_phy_mode,
+					uint8_t cc_switch_mode,
+					uint32_t session_id);
 #endif //#if !defined( __SME_API_H )

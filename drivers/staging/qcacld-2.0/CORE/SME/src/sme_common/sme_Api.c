@@ -392,7 +392,6 @@ tSmeCmd *smeGetCommandBuffer( tpAniSirGlobal pMac )
 {
     tSmeCmd *pRetCmd = NULL, *pTempCmd = NULL;
     tListElem *pEntry;
-    static int smeCommandQueueFull = 0;
 
     pEntry = csrLLRemoveHead( &pMac->sme.smeCmdFreeList, LL_ACCESS_LOCK );
 
@@ -402,11 +401,8 @@ tSmeCmd *smeGetCommandBuffer( tpAniSirGlobal pMac )
     if ( pEntry )
     {
         pRetCmd = GET_BASE_ADDR( pEntry, tSmeCmd, Link );
-        /* reset when free list is available */
-        smeCommandQueueFull = 0;
     }
-    else
-    {
+    else {
         int idx = 1;
 
         //Cannot change pRetCmd here since it needs to return later.
@@ -429,14 +425,11 @@ tSmeCmd *smeGetCommandBuffer( tpAniSirGlobal pMac )
         //dump what is in the pending queue
         csrLLLock(&pMac->sme.smeCmdPendingList);
         pEntry = csrLLPeekHead( &pMac->sme.smeCmdPendingList, LL_ACCESS_NOLOCK );
-        while(pEntry && !smeCommandQueueFull)
+        while(pEntry)
         {
             pTempCmd = GET_BASE_ADDR( pEntry, tSmeCmd, Link );
-            /* Print only 1st five commands from pending queue. */
-            if (idx <= 5)
-                smsLog( pMac, LOGE, "Out of command buffer.... SME pending command #%d (0x%X)",
-                        idx, pTempCmd->command );
-            idx++;
+            smsLog( pMac, LOGE, "Out of command buffer.... SME pending command #%d (0x%X)",
+                    idx++, pTempCmd->command );
             if( eSmeCsrCommandMask & pTempCmd->command )
             {
                 //CSR command is stuck. See what the reason code is for that command
@@ -446,28 +439,18 @@ tSmeCmd *smeGetCommandBuffer( tpAniSirGlobal pMac )
         }
         csrLLUnlock(&pMac->sme.smeCmdPendingList);
 
-        idx = 1;
         //There may be some more command in CSR's own pending queue
         csrLLLock(&pMac->roam.roamCmdPendingList);
         pEntry = csrLLPeekHead( &pMac->roam.roamCmdPendingList, LL_ACCESS_NOLOCK );
-        while(pEntry && !smeCommandQueueFull)
+        while(pEntry)
         {
             pTempCmd = GET_BASE_ADDR( pEntry, tSmeCmd, Link );
-            /* Print only 1st five commands from CSR pending queue */
-            if (idx <= 5)
-                smsLog( pMac, LOGE,
-                     "Out of command buffer.... CSR roamCmdPendingList command #%d (0x%X)",
-                     idx, pTempCmd->command );
-            idx++;
+            smsLog( pMac, LOGE, "Out of command buffer.... CSR pending command #%d (0x%X)",
+                    idx++, pTempCmd->command );
             dumpCsrCommandInfo(pMac, pTempCmd);
             pEntry = csrLLNext( &pMac->roam.roamCmdPendingList, pEntry, LL_ACCESS_NOLOCK );
         }
-        /* Increament static variable so that it prints pending command only once*/
-        smeCommandQueueFull++;
         csrLLUnlock(&pMac->roam.roamCmdPendingList);
-
-        /* panic with out-of-command */
-        VOS_BUG(0);
     }
 
     /* memset to zero */
@@ -873,8 +856,6 @@ sme_process_cmd:
                     {
                         //Force this command to wake up the chip
                         csrLLInsertHead( &pMac->sme.smeCmdActiveList, &pPmcCmd->Link, LL_ACCESS_NOLOCK );
-                        MTRACE(vos_trace(VOS_MODULE_ID_SME,
-                           TRACE_CODE_SME_COMMAND, pPmcCmd->sessionId, pPmcCmd->command));
                         csrLLUnlock( &pMac->sme.smeCmdActiveList );
                         /* Handle PS Offload Case Separately */
                         if(pMac->psOffloadEnabled)
@@ -2160,6 +2141,48 @@ eHalStatus dfsMsgProcessor(tpAniSirGlobal pMac, v_U16_t msgType, void *pMsgBuf)
     return status;
 }
 
+/**
+ * sme_extended_change_channel_ind()- function to indicate ECSA
+ * action frame is received in lim to SAP
+ * @mac_ctx:  pointer to global mac structure
+ * @msg_buf: contain new channel and session id.
+ *
+ * This function is called to post ECSA action frame
+ * receive event to SAP.
+ *
+ * Return: success if msg indicated to SAP else return failure
+ */
+static eHalStatus sme_extended_change_channel_ind(tpAniSirGlobal mac_ctx,
+						void *msg_buf)
+{
+	struct sir_sme_ext_cng_chan_ind *ext_chan_ind;
+	eHalStatus status = eHAL_STATUS_SUCCESS;
+	uint32_t session_id = 0;
+	tCsrRoamInfo roamInfo = {0};
+	eRoamCmdStatus roamStatus;
+	eCsrRoamResult roamResult;
+
+
+	ext_chan_ind = msg_buf;
+	if (NULL == ext_chan_ind) {
+		smsLog(mac_ctx, LOGE,
+			FL("pMsg is NULL for eWNI_SME_EXT_CHANGE_CHANNEL_IND"));
+		return eHAL_STATUS_FAILURE;
+	}
+	session_id = ext_chan_ind->session_id;
+	roamInfo.target_channel = ext_chan_ind->new_channel;
+	roamStatus = eCSR_ROAM_EXT_CHG_CHNL_IND;
+	roamResult = eCSR_ROAM_EXT_CHG_CHNL_UPDATE_IND;
+	smsLog(mac_ctx, LOG1,
+		FL("sapdfs: Received eWNI_SME_EXT_CHANGE_CHANNEL_IND for session id [%d]"),
+		session_id);
+
+	/* Indicate Ext Channel Change event to SAP */
+	csrRoamCallCallback(mac_ctx, session_id, &roamInfo, 0,
+					roamStatus, roamResult);
+	return status;
+}
+
 #if defined(FEATURE_WLAN_ESE) && defined(FEATURE_WLAN_ESE_UPLOAD)
 /*------------------------------------------------------------------
  *
@@ -2735,7 +2758,10 @@ eHalStatus sme_ProcessMsg(tHalHandle hHal, vos_msg_t* pMsg)
                     vos_mem_free( pMsg->bodyptr );
                 }
                 break;
-
+           case eWNI_SME_EXT_CHANGE_CHANNEL_IND:
+                status = sme_extended_change_channel_ind(pMac, pMsg->bodyptr);
+                vos_mem_free(pMsg->bodyptr);
+                break;
            case eWNI_SME_CHANNEL_CHANGE_RSP:
                 if (pMsg->bodyptr)
                 {
@@ -9193,7 +9219,44 @@ eHalStatus sme_UpdateRoamScanHomeAwayTime(tHalHandle hHal,
     return status;
 }
 
+/**
+ * sme_ext_change_channel()- function to post send ECSA
+ * action frame to csr.
+ * @hHal: Hal context
+ * @channel: new channel to switch
+ * @session_id: senssion it should be sent on.
+ *
+ * This function is called to post ECSA frame to csr.
+ *
+ * Return: success if msg is sent else return failure
+ */
+eHalStatus sme_ext_change_channel(tHalHandle hHal, uint32_t channel,
+						uint8_t session_id)
+{
+	eHalStatus status = eHAL_STATUS_SUCCESS;
+	tpAniSirGlobal mac_ctx  = PMAC_STRUCT(hHal);
+	uint8_t channel_state;
 
+	smsLog(mac_ctx, LOGE, FL(" Set Channel %d "), channel);
+	channel_state =
+		vos_nv_getChannelEnabledState(channel);
+
+	if ((NV_CHANNEL_DISABLE == channel_state)) {
+		smsLog(mac_ctx, LOGE, FL(" Invalid channel %d "), channel);
+		return eHAL_STATUS_FAILURE;
+	}
+
+	status = sme_AcquireGlobalLock(&mac_ctx->sme);
+
+	if (eHAL_STATUS_SUCCESS == status) {
+		/* update the channel list to the firmware */
+		status = csr_send_ext_change_channel(mac_ctx,
+						channel, session_id);
+		sme_ReleaseGlobalLock(&mac_ctx->sme);
+	}
+
+	return status;
+}
 /* ---------------------------------------------------------------------------
     \fn sme_getRoamIntraBand
     \brief  get Intra band roaming
@@ -11620,19 +11683,19 @@ VOS_STATUS sme_SelectCBMode(tHalHandle hHal, eCsrPhyMode eCsrPhyMode, tANI_U8 ch
    {
       if (pMac->roam.configParam.channelBondingMode5GHz) {
           if ( channel== 36 || channel == 52 || channel == 100 ||
-                channel == 116 || channel == 149 || channel == 132)
+                channel == 116 || channel == 149 )
           {
              smeConfig.csrConfig.channelBondingMode5GHz =
                 eCSR_INI_QUADRUPLE_CHANNEL_20MHZ_LOW_40MHZ_LOW;
           }
           else if ( channel == 40 || channel == 56 || channel == 104 ||
-                channel == 120 || channel == 153 || channel == 136)
+                channel == 120 || channel == 153 )
           {
              smeConfig.csrConfig.channelBondingMode5GHz =
                 eCSR_INI_QUADRUPLE_CHANNEL_20MHZ_HIGH_40MHZ_LOW;
           }
           else if ( channel == 44 || channel == 60 || channel == 108 ||
-                channel == 124 || channel == 157 || channel == 140)
+                channel == 124 || channel == 157 )
           {
              smeConfig.csrConfig.channelBondingMode5GHz =
                 eCSR_INI_QUADRUPLE_CHANNEL_20MHZ_LOW_40MHZ_HIGH;
@@ -11643,10 +11706,20 @@ VOS_STATUS sme_SelectCBMode(tHalHandle hHal, eCsrPhyMode eCsrPhyMode, tANI_U8 ch
              smeConfig.csrConfig.channelBondingMode5GHz =
                 eCSR_INI_QUADRUPLE_CHANNEL_20MHZ_HIGH_40MHZ_HIGH;
           }
-          else if ( channel == 165 )
+          else if ( channel == 165 || channel == 140 )
           {
              smeConfig.csrConfig.channelBondingMode5GHz =
                 eCSR_INI_SINGLE_CHANNEL_CENTERED;
+          }
+          else if ( channel == 132 )
+          {
+             smeConfig.csrConfig.channelBondingMode5GHz =
+                eCSR_INI_DOUBLE_CHANNEL_LOW_PRIMARY;
+          }
+          else if ( channel == 136 )
+          {
+             smeConfig.csrConfig.channelBondingMode5GHz =
+                eCSR_INI_DOUBLE_CHANNEL_HIGH_PRIMARY;
           }
       }
       /*TODO: Set HT40+ / HT40- for channel 5-7 based on ACS */
@@ -11661,6 +11734,7 @@ VOS_STATUS sme_SelectCBMode(tHalHandle hHal, eCsrPhyMode eCsrPhyMode, tANI_U8 ch
              smeConfig.csrConfig.channelBondingMode24GHz =
                 eCSR_INI_SINGLE_CHANNEL_CENTERED;
       }
+
    }
 #endif
 
@@ -11671,7 +11745,7 @@ VOS_STATUS sme_SelectCBMode(tHalHandle hHal, eCsrPhyMode eCsrPhyMode, tANI_U8 ch
           if ( channel== 40 || channel == 48 || channel == 56 ||
                 channel == 64 || channel == 104 || channel == 112 ||
                 channel == 120 || channel == 128 || channel == 136 ||
-                channel == 153 || channel == 161 || channel == 144)
+                channel == 153 || channel == 161 )
           {
              smeConfig.csrConfig.channelBondingMode5GHz =
                 eCSR_INI_DOUBLE_CHANNEL_HIGH_PRIMARY;
@@ -11679,12 +11753,12 @@ VOS_STATUS sme_SelectCBMode(tHalHandle hHal, eCsrPhyMode eCsrPhyMode, tANI_U8 ch
           else if ( channel== 36 || channel == 44 || channel == 52 ||
                 channel == 60 || channel == 100 || channel == 108 ||
                 channel == 116 || channel == 124 || channel == 132 ||
-                channel == 149 || channel == 157 || channel == 140)
+                channel == 149 || channel == 157 )
           {
              smeConfig.csrConfig.channelBondingMode5GHz =
                 eCSR_INI_DOUBLE_CHANNEL_LOW_PRIMARY;
           }
-          else if ( channel == 165 )
+          else if ( channel == 165 || channel == 140)
           {
              smeConfig.csrConfig.channelBondingMode5GHz =
                 eCSR_INI_SINGLE_CHANNEL_CENTERED;
@@ -12793,31 +12867,35 @@ eHalStatus sme_ChAvoidUpdateReq
    \fn sme_RoamChannelChangeReq
    \brief API to Indicate Channel change to new target channel
    \param hHal - The handle returned by macOpen
-   \param targetChannel - New Channel to move the SAP to.
    \return eHalStatus
 ---------------------------------------------------------------------------*/
 eHalStatus sme_RoamChannelChangeReq( tHalHandle hHal, tCsrBssid bssid,
-                                tANI_U8 targetChannel, eCsrPhyMode phyMode )
+                                tCsrRoamProfile *pprofile )
 {
     eHalStatus status = eHAL_STATUS_FAILURE;
     tpAniSirGlobal pMac = PMAC_STRUCT( hHal );
     tANI_U32 cbMode;
-
+    u_int8_t ch_mode;
     /*
      * We are getting channel bonding mode from sapDfsInfor structure
      * because we've implemented channel width fallback mechanism for DFS
      * which will result in channel width changing dynamically.
      */
     cbMode = pMac->sap.SapDfsInfo.new_cbMode;
+    ch_mode = (pprofile->ChannelInfo.ChannelList[0] <= 14) ?
+                      pMac->roam.configParam.channelBondingMode24GHz :
+                      pMac->roam.configParam.channelBondingMode5GHz;
     status = sme_AcquireGlobalLock( &pMac->sme );
     if ( HAL_STATUS_SUCCESS( status ) )
     {
-        sme_SelectCBMode(hHal, phyMode, targetChannel);
+        sme_SelectCBMode(hHal,
+        sapConvertSapPhyModeToCsrPhyMode(pprofile->phyMode) ,
+        pprofile->ChannelInfo.ChannelList[0]);
 
         VOS_TRACE(VOS_MODULE_ID_SME, VOS_TRACE_LEVEL_INFO_MED,
-                  FL("sapdfs: channel bonding mode is [%d]"), cbMode);
-        status = csrRoamChannelChangeReq(pMac, bssid, targetChannel,
-                                         cbMode);
+         FL("sapdfs: channel bonding mode is [%d]& new negotiated CBmode=%d"),
+         cbMode,ch_mode);
+        status = csrRoamChannelChangeReq(pMac, bssid, ch_mode, pprofile);
         sme_ReleaseGlobalLock( &pMac->sme );
     }
     return (status);
@@ -12915,10 +12993,13 @@ eHalStatus sme_RoamStartBeaconReq( tHalHandle hHal, tCsrBssid bssid,
    \param hHal - The handle returned by macOpen
    \param pDfsCsaReq - CSA IE request
    \param bssid - SAP bssid
+   \param ch_bandwidth - Channel offset
    \return eHalStatus
 ---------------------------------------------------------------------------*/
 eHalStatus sme_RoamCsaIeRequest(tHalHandle hHal, tCsrBssid bssid,
-                                    tANI_U8 targetChannel, tANI_U8 csaIeReqd)
+                                    tANI_U8 targetChannel,
+                                    tANI_U8 csaIeReqd,
+                                    u_int8_t ch_bandwidth)
 {
     eHalStatus status = eHAL_STATUS_FAILURE;
     tpAniSirGlobal pMac = PMAC_STRUCT( hHal );
@@ -12926,7 +13007,7 @@ eHalStatus sme_RoamCsaIeRequest(tHalHandle hHal, tCsrBssid bssid,
     if ( HAL_STATUS_SUCCESS( status ) )
     {
         status = csrRoamSendChanSwIERequest(pMac, bssid, targetChannel,
-                                                             csaIeReqd);
+                                                  csaIeReqd, ch_bandwidth);
         sme_ReleaseGlobalLock( &pMac->sme );
     }
     return (status);
@@ -14221,113 +14302,43 @@ eHalStatus sme_handle_dfs_chan_scan(tHalHandle hHal, tANI_U8 dfs_flag)
     return status;
 }
 
-/**
- * sme_update_nss() - SME API to change the number for spatial streams (1 or 2)
- * @hal:            - Handle returned by macOpen
- * @nss:            - Number of spatial streams
+
+#ifdef FEATURE_WLAN_MCC_TO_SCC_SWITCH
+/*
+ * sme_validate_sap_channel_switch() - validate target channel switch w.r.t
+ *      concurreny rules set to avoid channel interference.
+ * @hal - Hal context
+ * @sap_phy_mode - phy mode of SAP
+ * @cc_switch_mode - concurreny switch mode
+ * @session_id - sme session id.
  *
- * This function is used to update the number of spatial streams supported.
- *
- * Return: Success upon successfully changing nss else failure
- *
+ * Return: true if there is no channel interference else return false
  */
-eHalStatus sme_update_nss(tHalHandle h_hal, uint8_t nss)
+bool sme_validate_sap_channel_switch(tHalHandle hal,
+                   uint16_t sap_ch,
+                   eCsrPhyMode sap_phy_mode,
+                   uint8_t cc_switch_mode,
+                   uint32_t session_id)
 {
-	eHalStatus status;
-	tpAniSirGlobal mac_ctx = PMAC_STRUCT(h_hal);
-	uint32_t  i, value = 0;
-	union {
-		uint16_t                        cfg_value16;
-		tSirMacHTCapabilityInfo         ht_cap_info;
-	} uHTCapabilityInfo;
-	tCsrRoamSession *csr_session;
+	eHalStatus status = eHAL_STATUS_FAILURE;
+	tpAniSirGlobal mac = PMAC_STRUCT(hal);
+	tCsrRoamSession *session = CSR_GET_SESSION(mac, session_id);
+	uint16_t intf_channel = 0;
 
-	status = sme_AcquireGlobalLock(&mac_ctx->sme);
-
-	if (eHAL_STATUS_SUCCESS == status) {
-		mac_ctx->roam.configParam.enable2x2 = (nss == 1) ? 0 : 1;
-
-		/* get the HT capability info*/
-		ccmCfgGetInt(mac_ctx, WNI_CFG_HT_CAP_INFO, &value);
-		uHTCapabilityInfo.cfg_value16 = (0xFFFF & value);
-
-		for (i = 0; i < CSR_ROAM_SESSION_MAX; i++) {
-			if (CSR_IS_SESSION_VALID(mac_ctx, i)) {
-				csr_session = CSR_GET_SESSION(mac_ctx, i);
-				if (!csr_session) {
-					smsLog(mac_ctx, LOGE,
-					       FL("Session does not exist for interface %d"),
-					       i);
-					continue;
-				}
-				csr_session->htConfig.ht_tx_stbc =
-					uHTCapabilityInfo.ht_cap_info.txSTBC;
-			}
-		}
-
-		sme_ReleaseGlobalLock(&mac_ctx->sme);
+	session->ch_switch_in_progress = true;
+	status = sme_AcquireGlobalLock(&mac->sme);
+	if (HAL_STATUS_SUCCESS(status))	{
+		intf_channel = csrCheckConcurrentChannelOverlap(mac, sap_ch,
+						sap_phy_mode,
+						cc_switch_mode);
+		sme_ReleaseGlobalLock(&mac->sme);
+	} else {
+		smsLog(mac, LOGE, FL(" sme_AcquireGlobalLock error!"));
+		session->ch_switch_in_progress = false;
+		return false;
 	}
 
-	return status;
+	session->ch_switch_in_progress = false;
+	return (intf_channel == 0)? true : false;
 }
-
-uint8_t sme_is_any_session_in_connected_state(tHalHandle h_hal)
-{
-	tpAniSirGlobal mac_ctx = PMAC_STRUCT(h_hal);
-	eHalStatus     status;
-	uint8_t        ret     = FALSE;
-
-	status = sme_AcquireGlobalLock(&mac_ctx->sme);
-	if (eHAL_STATUS_SUCCESS == status) {
-		ret = csrIsAnySessionInConnectState(mac_ctx);
-		sme_ReleaseGlobalLock(&mac_ctx->sme);
-	}
-	return ret;
-}
-
-/**
- * smeNeighborRoamIsHandoffInProgress() - Function to know if
- * handoff is in progress
- * @hal:                Handle returned by macOpen
- * @sessionId: sessionId of the STA session
- *
- * This function is a wrapper to call
- * csrNeighborRoamIsHandoffInProgress to know if handoff is in
- * progress
- *
- * Return: True or False
- *
- */
-bool smeNeighborRoamIsHandoffInProgress(tHalHandle hHal, tANI_U8 sessionId)
-{
-	return csrNeighborRoamIsHandoffInProgress(PMAC_STRUCT(hHal), sessionId);
-}
-
-/**
- * sme_disable_non_fcc_channel() - non-fcc channel disable request
- * @hal: HAL pointer
- * @fcc_constraint: true: disable, false; enable
- *
- * Return: eHalStatus.
- */
-eHalStatus sme_disable_non_fcc_channel(tHalHandle hal, bool fcc_constraint)
-{
-	eHalStatus status = eHAL_STATUS_SUCCESS;
-	tpAniSirGlobal mac_ptr  = PMAC_STRUCT(hal);
-
-	status = sme_AcquireGlobalLock(&mac_ptr->sme);
-
-	if (eHAL_STATUS_SUCCESS == status) {
-
-		if (fcc_constraint != mac_ptr->scan.fcc_constraint) {
-			mac_ptr->scan.fcc_constraint = fcc_constraint;
-
-			/* update the channel list to the firmware */
-			status = csrUpdateChannelList(mac_ptr);
-		}
-
-		sme_ReleaseGlobalLock(&mac_ptr->sme);
-	}
-
-	return status;
-}
+#endif

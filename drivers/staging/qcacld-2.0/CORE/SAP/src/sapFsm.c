@@ -89,17 +89,6 @@ extern sapSafeChannelType safeChannels[];
  * Static Variable Definitions
  * -------------------------------------------------------------------------*/
 
-#ifdef WLAN_ENABLE_CHNL_MATRIX_RESTRICTION
-/*
- * TODO: At present SAP Channel leakage matrix for ch 144
- * is not available from system's team. So to play it safe
- * and avoid crash if channel 144 is request, in following
- * matix channel 144 is added such that it will cause code
- * to avoid selecting channel 144.
- *
- * THESE ENTRIES SHOULD BE REPLACED WITH CORRECT VALUES AS
- * PROVIDED BY SYSTEM'S TEAM.
- */
 /* channel tx leakage table - ht80 */
 tSapChanMatrixInfo ht80_chan[] =
 {
@@ -113,12 +102,7 @@ tSapChanMatrixInfo ht80_chan[] =
     {116, 424},           {120, 429},
     {124, 437},           {128, 435},
     {132, SAP_TX_LEAKAGE_MAX},{136, SAP_TX_LEAKAGE_MAX},
-    {140, SAP_TX_LEAKAGE_MAX}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
-
+    {140, SAP_TX_LEAKAGE_MAX}}},
 
  {56,
    {{36, 171},            {40, 178},
@@ -130,11 +114,7 @@ tSapChanMatrixInfo ht80_chan[] =
     {116, 403},           {120, 397},
     {124, SAP_TX_LEAKAGE_MAX},{128, SAP_TX_LEAKAGE_MAX},
     {132, SAP_TX_LEAKAGE_MAX},{136, SAP_TX_LEAKAGE_MAX},
-    {140, SAP_TX_LEAKAGE_MAX}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
+    {140, SAP_TX_LEAKAGE_MAX}}},
 
  {60,
    {{36, 156},            {40, 146},
@@ -146,11 +126,7 @@ tSapChanMatrixInfo ht80_chan[] =
     {116, 395},           {120, 399},
     {124, SAP_TX_LEAKAGE_MAX},{128, SAP_TX_LEAKAGE_MAX},
     {132, SAP_TX_LEAKAGE_MAX},{136, SAP_TX_LEAKAGE_MAX},
-    {140, SAP_TX_LEAKAGE_MAX}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
+    {140, SAP_TX_LEAKAGE_MAX}}},
 
  {64,
    {{36, 217},            {40, 221},
@@ -162,11 +138,7 @@ tSapChanMatrixInfo ht80_chan[] =
     {116, 375},           {120, 374},
     {124, SAP_TX_LEAKAGE_MAX},{128, SAP_TX_LEAKAGE_MAX},
     {132, SAP_TX_LEAKAGE_MAX},{136, SAP_TX_LEAKAGE_MAX},
-    {140, SAP_TX_LEAKAGE_MAX}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
+    {140, SAP_TX_LEAKAGE_MAX}}},
 
  {100,
    {{36, 357},            {40, 326},
@@ -178,11 +150,7 @@ tSapChanMatrixInfo ht80_chan[] =
     {116, 166},           {120, SAP_TX_LEAKAGE_MIN},
     {124, SAP_TX_LEAKAGE_MIN},{128, SAP_TX_LEAKAGE_MIN},
     {132, SAP_TX_LEAKAGE_MIN},{136, SAP_TX_LEAKAGE_MIN},
-    {140, SAP_TX_LEAKAGE_MIN}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
+    {140, SAP_TX_LEAKAGE_MIN}}},
 
  {104,
    {{36, 325},            {40, 325},
@@ -194,11 +162,7 @@ tSapChanMatrixInfo ht80_chan[] =
     {116, 198},           {120, SAP_TX_LEAKAGE_MIN},
     {124, SAP_TX_LEAKAGE_MIN},{128, SAP_TX_LEAKAGE_MIN},
     {132, SAP_TX_LEAKAGE_MIN},{136, SAP_TX_LEAKAGE_MIN},
-    {140, SAP_TX_LEAKAGE_MIN}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
+    {140, SAP_TX_LEAKAGE_MIN}}},
 
  {108,
    {{36, 304},            {40, 332},
@@ -210,11 +174,7 @@ tSapChanMatrixInfo ht80_chan[] =
     {116, 185},           {120, SAP_TX_LEAKAGE_MIN},
     {124, SAP_TX_LEAKAGE_MIN},{128, SAP_TX_LEAKAGE_MIN},
     {132, SAP_TX_LEAKAGE_MIN},{136, SAP_TX_LEAKAGE_MIN},
-    {140, SAP_TX_LEAKAGE_MIN}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
+    {140, SAP_TX_LEAKAGE_MIN}}},
 
  {112,
    {{36, 327},            {40, 335},
@@ -226,11 +186,7 @@ tSapChanMatrixInfo ht80_chan[] =
     {116, 189},           {120, SAP_TX_LEAKAGE_MIN},
     {124, SAP_TX_LEAKAGE_MIN},{128, SAP_TX_LEAKAGE_MIN},
     {132, SAP_TX_LEAKAGE_MIN},{136, SAP_TX_LEAKAGE_MIN},
-    {140, SAP_TX_LEAKAGE_MIN}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
+    {140, SAP_TX_LEAKAGE_MIN}}},
 
  {116,
    {{36, 384},            {40, 372},
@@ -242,11 +198,7 @@ tSapChanMatrixInfo ht80_chan[] =
     {116, SAP_TX_LEAKAGE_MIN},{120, SAP_TX_LEAKAGE_MIN},
     {124, SAP_TX_LEAKAGE_MIN},{128, SAP_TX_LEAKAGE_MIN},
     {132, SAP_TX_LEAKAGE_MIN},{136, SAP_TX_LEAKAGE_MIN},
-    {140, SAP_TX_LEAKAGE_MIN}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
+    {140, SAP_TX_LEAKAGE_MIN}}},
 
  {120,
    {{36, 395},            {40, 419},
@@ -258,11 +210,7 @@ tSapChanMatrixInfo ht80_chan[] =
     {116, SAP_TX_LEAKAGE_MIN},{120, SAP_TX_LEAKAGE_MIN},
     {124, SAP_TX_LEAKAGE_MIN},{128, 159},
     {132, SAP_TX_LEAKAGE_MIN},{136, SAP_TX_LEAKAGE_MIN},
-    {140, SAP_TX_LEAKAGE_MIN}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
+    {140, SAP_TX_LEAKAGE_MIN}}},
 
  {124,
    {{36, 469},            {40, 433},
@@ -274,11 +222,7 @@ tSapChanMatrixInfo ht80_chan[] =
     {116, 350},           {120, SAP_TX_LEAKAGE_MIN},
     {124, SAP_TX_LEAKAGE_MIN},{128, 138},
     {132, SAP_TX_LEAKAGE_MIN},{136, SAP_TX_LEAKAGE_MIN},
-    {140, SAP_TX_LEAKAGE_MIN}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
+    {140, SAP_TX_LEAKAGE_MIN}}},
 
  {128,
    {{36, 408},            {40, 434},
@@ -290,12 +234,7 @@ tSapChanMatrixInfo ht80_chan[] =
     {116, 142},           {120, SAP_TX_LEAKAGE_MIN},
     {124, SAP_TX_LEAKAGE_MIN},{128, SAP_TX_LEAKAGE_MIN},
     {132, SAP_TX_LEAKAGE_MIN},{136, SAP_TX_LEAKAGE_MIN},
-    {140, SAP_TX_LEAKAGE_MIN}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
-
+    {140, SAP_TX_LEAKAGE_MIN}}},
  {132,
    {{36, SAP_TX_LEAKAGE_MAX },            {40, SAP_TX_LEAKAGE_MAX },
     {44, SAP_TX_LEAKAGE_MAX },            {48, SAP_TX_LEAKAGE_MAX },
@@ -306,12 +245,7 @@ tSapChanMatrixInfo ht80_chan[] =
     {116, SAP_TX_LEAKAGE_MIN },{120, SAP_TX_LEAKAGE_MIN},
     {124, SAP_TX_LEAKAGE_MIN},{128, SAP_TX_LEAKAGE_MIN},
     {132, SAP_TX_LEAKAGE_MIN},{136, SAP_TX_LEAKAGE_MIN},
-    {140, SAP_TX_LEAKAGE_MIN }
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
-
+    {140, SAP_TX_LEAKAGE_MIN }}},
  {136,
    {{36, SAP_TX_LEAKAGE_MAX },            {40, SAP_TX_LEAKAGE_MAX },
     {44, SAP_TX_LEAKAGE_MAX },            {48, SAP_TX_LEAKAGE_MAX },
@@ -322,12 +256,7 @@ tSapChanMatrixInfo ht80_chan[] =
     {116, SAP_TX_LEAKAGE_MIN },           {120, SAP_TX_LEAKAGE_MIN},
     {124, SAP_TX_LEAKAGE_MIN},{128, SAP_TX_LEAKAGE_MIN},
     {132, SAP_TX_LEAKAGE_MIN},{136, SAP_TX_LEAKAGE_MIN},
-    {140, SAP_TX_LEAKAGE_MIN }
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
-
+    {140, SAP_TX_LEAKAGE_MIN }}},
  {140,
    {{36, SAP_TX_LEAKAGE_MAX },            {40, SAP_TX_LEAKAGE_MAX },
     {44, SAP_TX_LEAKAGE_MAX },            {48, SAP_TX_LEAKAGE_MAX },
@@ -337,11 +266,7 @@ tSapChanMatrixInfo ht80_chan[] =
     {108, SAP_TX_LEAKAGE_MIN },{112, SAP_TX_LEAKAGE_MIN },
     {116, SAP_TX_LEAKAGE_MIN },           {120, SAP_TX_LEAKAGE_MIN},
     {124, SAP_TX_LEAKAGE_MIN},{128, SAP_TX_LEAKAGE_MIN},
-    {132, SAP_TX_LEAKAGE_MIN},{136, SAP_TX_LEAKAGE_MIN}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
+    {132, SAP_TX_LEAKAGE_MIN},{136, SAP_TX_LEAKAGE_MIN}}},
 };
 
 /* channel tx leakage table - ht40 */
@@ -357,12 +282,7 @@ tSapChanMatrixInfo ht40_chan[] =
     {116, SAP_TX_LEAKAGE_MAX},{120, SAP_TX_LEAKAGE_MAX},
     {124, SAP_TX_LEAKAGE_MAX},{128, SAP_TX_LEAKAGE_MAX},
     {132, SAP_TX_LEAKAGE_MAX},{136, SAP_TX_LEAKAGE_MAX},
-    {140, SAP_TX_LEAKAGE_MAX}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
-
+    {140, SAP_TX_LEAKAGE_MAX}}},
  {56,
    {{36, 446},            {40, 446 },
     {44, 300},            {48, 300 },
@@ -373,12 +293,7 @@ tSapChanMatrixInfo ht40_chan[] =
     {116, SAP_TX_LEAKAGE_MAX},{120, SAP_TX_LEAKAGE_MAX},
     {124, SAP_TX_LEAKAGE_MAX},{128, SAP_TX_LEAKAGE_MAX},
     {132, SAP_TX_LEAKAGE_MAX},{136, SAP_TX_LEAKAGE_MAX},
-    {140, SAP_TX_LEAKAGE_MAX}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
-
+    {140, SAP_TX_LEAKAGE_MAX}}},
  {60,
    {{36, 481},            {40, 481 },
     {44, 407},            {48, 407 },
@@ -389,12 +304,7 @@ tSapChanMatrixInfo ht40_chan[] =
     {116, SAP_TX_LEAKAGE_MAX},{120, SAP_TX_LEAKAGE_MAX},
     {124, SAP_TX_LEAKAGE_MAX},{128, SAP_TX_LEAKAGE_MAX},
     {132, SAP_TX_LEAKAGE_MAX},{136, SAP_TX_LEAKAGE_MAX},
-    {140, SAP_TX_LEAKAGE_MAX}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
-
+    {140, SAP_TX_LEAKAGE_MAX}}},
  {64,
    {{36, 524},            {40, 524 },
     {44, 527},            {48, 527 },
@@ -405,11 +315,7 @@ tSapChanMatrixInfo ht40_chan[] =
     {116, SAP_TX_LEAKAGE_MAX},{120, SAP_TX_LEAKAGE_MAX},
     {124, SAP_TX_LEAKAGE_MAX},{128, SAP_TX_LEAKAGE_MAX},
     {132, SAP_TX_LEAKAGE_MAX},{136, SAP_TX_LEAKAGE_MAX},
-    {140, SAP_TX_LEAKAGE_MAX}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
+    {140, SAP_TX_LEAKAGE_MAX}}},
 
  {100,
    {{36, 618},            {40, 618 },
@@ -421,12 +327,7 @@ tSapChanMatrixInfo ht40_chan[] =
     {116, 486},           {120, 486 },
     {124, 498},           {128, 498 },
     {132, 538},           {136, 538 },
-    {140, 598}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
-
+    {140, 598}}},
  {104,
    {{36, 636},            {40, 636 },
     {44, 601},            {48, 601 },
@@ -437,12 +338,7 @@ tSapChanMatrixInfo ht40_chan[] =
     {116, 396},{120, 396 },
     {124, 483},           {128, 483 },
     {132, 553},           {136, 553 },
-    {140, 568}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
-
+    {140, 568}}},
  {108,
    {{36, 600},            {40, 600 },
     {44, 627},            {48, 627 },
@@ -453,12 +349,7 @@ tSapChanMatrixInfo ht40_chan[] =
     {116, 323},{120, 323},
     {124, 494},{128, 494},
     {132, 566},{136, 566 },
-    {140, 534}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
-
+    {140, 534}}},
  {112,
    {{36, 645},            {40, 645 },
     {44, 641},            {48, 641 },
@@ -469,12 +360,7 @@ tSapChanMatrixInfo ht40_chan[] =
     {116, SAP_TX_LEAKAGE_MIN},{120, SAP_TX_LEAKAGE_MIN},
     {124, 414},{128, 414},
     {132, 533},{136, 533 },
-    {140, 521}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
-
+    {140, 521}}},
  {116,
    {{36, 661},            {40, 661 },
     {44, 624},            {48, 624 },
@@ -485,12 +371,7 @@ tSapChanMatrixInfo ht40_chan[] =
     {116, SAP_TX_LEAKAGE_MIN},{120, SAP_TX_LEAKAGE_MIN},
     {124, 309},{128, 309 },
     {132, 412},{136, 412},
-    {140, 509}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
-
+    {140, 509}}},
  {120,
    {{36, 667},            {40, 667 },
     {44, 645},            {48, 645 },
@@ -501,12 +382,7 @@ tSapChanMatrixInfo ht40_chan[] =
     {116, SAP_TX_LEAKAGE_MIN},{120, SAP_TX_LEAKAGE_MIN},
     {124, SAP_TX_LEAKAGE_MIN},{128, SAP_TX_LEAKAGE_MIN},
     {132, 434},{136, 434},
-    {140, 514}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
-
+    {140, 514}}},
  {124,
    {{36, 676},            {40, 676 },
     {44, 668},            {48, 668 },
@@ -517,12 +393,7 @@ tSapChanMatrixInfo ht40_chan[] =
     {116, 225},{120, 225},
     {124, SAP_TX_LEAKAGE_MIN},{128, SAP_TX_LEAKAGE_MIN},
     {132, 327},{136, 327},
-    {140, 468}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
-
+    {140, 468}}},
  {128,
    {{36, 678},            {40, 678 },
     {44, 664},            {48, 664 },
@@ -533,12 +404,7 @@ tSapChanMatrixInfo ht40_chan[] =
     {116, 293},{120, 293},
     {124, SAP_TX_LEAKAGE_MIN},{128, SAP_TX_LEAKAGE_MIN},
     {132, SAP_TX_LEAKAGE_MIN},{136, SAP_TX_LEAKAGE_MIN},
-    {140, 415}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
-
+    {140, 415}}},
  {132,
    {{36, 689},            {40, 689 },
     {44, 669},            {48, 669 },
@@ -549,12 +415,7 @@ tSapChanMatrixInfo ht40_chan[] =
     {116, 428},{120, 428},
     {124, 247},{128, 247},
     {132, SAP_TX_LEAKAGE_MIN},{136, SAP_TX_LEAKAGE_MIN},
-    {140, SAP_TX_LEAKAGE_MIN }
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
-
+    {140, SAP_TX_LEAKAGE_MIN }}},
  {136,
    {{36, 703},            {40, 703 },
     {44, 688},            {48, SAP_TX_LEAKAGE_MIN },
@@ -565,12 +426,7 @@ tSapChanMatrixInfo ht40_chan[] =
     {116, 428},           {120, 428},
     {124, 289},{128, 289},
     {132, SAP_TX_LEAKAGE_MIN},{136, SAP_TX_LEAKAGE_MIN},
-    {140, SAP_TX_LEAKAGE_MIN }
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
-
+    {140, SAP_TX_LEAKAGE_MIN }}},
  {140,
    {{36, 695},            {40, 695 },
     {44, 684},            {48, 684 },
@@ -581,11 +437,7 @@ tSapChanMatrixInfo ht40_chan[] =
     {116, 529},           {120, 529},
     {124, 432},{128, 432},
     {132, 262},{136, 262},
-    {140, SAP_TX_LEAKAGE_MIN }
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
+    {140, SAP_TX_LEAKAGE_MIN }}},
 };
 
 
@@ -602,12 +454,7 @@ tSapChanMatrixInfo ht20_chan[] =
     {116, SAP_TX_LEAKAGE_MAX},{120, SAP_TX_LEAKAGE_MAX},
     {124, SAP_TX_LEAKAGE_MAX},{128, SAP_TX_LEAKAGE_MAX},
     {132, SAP_TX_LEAKAGE_MAX},{136, SAP_TX_LEAKAGE_MAX},
-    {140, SAP_TX_LEAKAGE_MAX}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
-
+    {140, SAP_TX_LEAKAGE_MAX}}},
  {56,
    {{36, 468},            {40, 413},
     {44, 374},            {48, 206},
@@ -618,12 +465,7 @@ tSapChanMatrixInfo ht20_chan[] =
     {116, SAP_TX_LEAKAGE_MAX},{120, SAP_TX_LEAKAGE_MAX},
     {124, SAP_TX_LEAKAGE_MAX},{128, SAP_TX_LEAKAGE_MAX},
     {132, SAP_TX_LEAKAGE_MAX},{136, SAP_TX_LEAKAGE_MAX},
-    {140, SAP_TX_LEAKAGE_MAX}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
-
+    {140, SAP_TX_LEAKAGE_MAX}}},
  {60,
    {{36, 507},            {40, 440},
     {44, 431},            {48, 313},
@@ -634,12 +476,7 @@ tSapChanMatrixInfo ht20_chan[] =
     {116, SAP_TX_LEAKAGE_MAX},{120, SAP_TX_LEAKAGE_MAX},
     {124, SAP_TX_LEAKAGE_MAX},{128, SAP_TX_LEAKAGE_MAX},
     {132, SAP_TX_LEAKAGE_MAX},{136, SAP_TX_LEAKAGE_MAX},
-    {140, SAP_TX_LEAKAGE_MAX}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
-
+    {140, SAP_TX_LEAKAGE_MAX}}},
  {64,
    {{36, 516},            {40, 520},
     {44, 506},            {48, 424},
@@ -650,11 +487,7 @@ tSapChanMatrixInfo ht20_chan[] =
     {116, SAP_TX_LEAKAGE_MAX},{120, SAP_TX_LEAKAGE_MAX},
     {124, SAP_TX_LEAKAGE_MAX},{128, SAP_TX_LEAKAGE_MAX},
     {132, SAP_TX_LEAKAGE_MAX},{136, SAP_TX_LEAKAGE_MAX},
-    {140, SAP_TX_LEAKAGE_MAX}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
+    {140, SAP_TX_LEAKAGE_MAX}}},
 
  {100,
    {{36, 616},            {40, 601},
@@ -666,12 +499,7 @@ tSapChanMatrixInfo ht20_chan[] =
     {116, 462},           {120, 522},
     {124, 571},           {128, 589},
     {132, 593},           {136, 598},
-    {140, 594}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
-
+    {140, 594}}},
  {104,
    {{36, 622},            {40, 624},
     {44, 618},            {48, 610},
@@ -682,12 +510,7 @@ tSapChanMatrixInfo ht20_chan[] =
     {116, 483},{120, 503},
     {124, 523},           {128, 565},
     {132, 570},           {136, 588},
-    {140, 585}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
-
+    {140, 585}}},
  {108,
    {{36, 620},            {40, 638},
     {44, 611},            {48, 614},
@@ -698,12 +521,7 @@ tSapChanMatrixInfo ht20_chan[] =
     {116, 477},{120, 497},
     {124, 517},{128, 537},
     {132, 557},{136, 577},
-    {140, 603}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
-
+    {140, 603}}},
  {112,
    {{36, 636},            {40, 623},
     {44, 638},            {48, 628},
@@ -714,12 +532,7 @@ tSapChanMatrixInfo ht20_chan[] =
     {116, SAP_TX_LEAKAGE_MIN},{120, 481},
     {124, 501},{128, 421},
     {132, 541},{136, 561},
-    {140, 583}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
-
+    {140, 583}}},
  {116,
    {{36, 646},            {40, 648},
     {44, 633},            {48, 634},
@@ -730,12 +543,7 @@ tSapChanMatrixInfo ht20_chan[] =
     {116, SAP_TX_LEAKAGE_MIN},{120, SAP_TX_LEAKAGE_MIN},
     {124, SAP_TX_LEAKAGE_MIN},{128, SAP_TX_LEAKAGE_MIN},
     {132, 534},{136, 554},
-    {140, 574}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
-
+    {140, 574}}},
  {120,
    {{36, 643},            {40, 649},
     {44, 654},            {48, 629},
@@ -746,12 +554,7 @@ tSapChanMatrixInfo ht20_chan[] =
     {116, SAP_TX_LEAKAGE_MIN},{120, SAP_TX_LEAKAGE_MIN},
     {124, SAP_TX_LEAKAGE_MIN},{128, 505},
     {132, 525},{136, 545},
-    {140, 565}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
-
+    {140, 565}}},
  {124,
    {{36, 638},            {40, 657},
     {44, 663},            {48, 649},
@@ -762,12 +565,7 @@ tSapChanMatrixInfo ht20_chan[] =
     {116, 499},{120, SAP_TX_LEAKAGE_MIN},
     {124, SAP_TX_LEAKAGE_MIN},{128, SAP_TX_LEAKAGE_MIN},
     {132, 499},{136, 519},
-    {140, 539}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
-
+    {140, 539}}},
  {128,
    {{36, 651},            {40, 651},
     {44, 674},            {48, 640},
@@ -778,12 +576,7 @@ tSapChanMatrixInfo ht20_chan[] =
     {116, 499},{120, 479},
     {124, SAP_TX_LEAKAGE_MIN},{128, SAP_TX_LEAKAGE_MIN},
     {132, SAP_TX_LEAKAGE_MIN},{136, 479},
-    {140, 499}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
-
+    {140, 499}}},
  {132,
    {{36, 643},            {40, 668},
     {44, 651},            {48, 657},
@@ -794,12 +587,7 @@ tSapChanMatrixInfo ht20_chan[] =
     {116, 550},{120, 530},
     {124, 510},{128, SAP_TX_LEAKAGE_MIN},
     {132, SAP_TX_LEAKAGE_MIN},{136, SAP_TX_LEAKAGE_MIN},
-    {140, 490}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
-
+    {140, 490}}},
  {136,
    {{36, 654},            {40, 667},
     {44, 666},            {48, 642},
@@ -810,12 +598,7 @@ tSapChanMatrixInfo ht20_chan[] =
     {116, 555},           {120, 535},
     {124, 515},{128, 495},
     {132, SAP_TX_LEAKAGE_MIN},{136, SAP_TX_LEAKAGE_MIN},
-    {140, SAP_TX_LEAKAGE_MIN}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
-
+    {140, SAP_TX_LEAKAGE_MIN}}},
  {140,
    {{36, 679},            {40, 673},
     {44, 667},            {48, 656},
@@ -826,13 +609,8 @@ tSapChanMatrixInfo ht20_chan[] =
     {116, 573},           {120, 553},
     {124, 533},{128, 513},
     {132, 490},{136, SAP_TX_LEAKAGE_MIN},
-    {140, SAP_TX_LEAKAGE_MIN}
-#ifdef FEATURE_WLAN_CH144
-    ,{144, SAP_TX_LEAKAGE_MIN}
-#endif
-}},
+    {140, SAP_TX_LEAKAGE_MIN}}},
 };
-#endif //end of WLAN_ENABLE_CHNL_MATRIX_RESTRICTION
 
 
 /*----------------------------------------------------------------------------
@@ -939,32 +717,36 @@ static inline void sapEventInit(ptWLAN_SAPEvent sapEvent)
    sapEvent->u2 = 0;
 }
 
-#ifdef WLAN_ENABLE_CHNL_MATRIX_RESTRICTION
 /*
- * This function gives the leakage matrix for given NOL channel and cbMode
+ * This function is added to check if channel is in tx leak range
  *
  * PARAMETERS
  * IN
- * sapContext        : Pointer to vos global context structure
- * cbMode            : target channel bonding mode
- * NOL_channel       : the NOL channel whose leakage matrix is required
- * pTarget_chnl_mtrx : pointer to target channel matrix returned.
+ * sapContext: Pointer to vos global context structure
+ * target_channel: the target channel to switch to
  *
  * RETURN VALUE
- * BOOLEAN
- * TRUE:  leakage matrix was found
- * FALSE: leakage matrix was not found
+ * BOOLEAN to indicate if the target channel is good or bad to switch
+ *
+ * TRUE:  the channel is above the tx leak threshold, CANNOT USE
+ * FALSE: the channel is below the tx leak threshold, CAN BE USED
  */
 v_BOOL_t
-sapFindTargetChannelInChannelMatrix(ptSapContext sapContext,
-                                    ePhyChanBondState cbMode,
-                                    v_U8_t NOL_channel,
-                                    tSapTxLeakInfo **pTarget_chnl_mtrx)
+sapChannelMatrixCheck(ptSapContext sapContext,
+                      ePhyChanBondState cbMode,
+                      v_U8_t target_channel)
 {
     tSapTxLeakInfo *target_chan_matrix = NULL;
     tSapChanMatrixInfo *pchan_matrix = NULL;
+    v_U32_t     num_channel = (RF_CHAN_140 - RF_CHAN_36) + 1;
     v_U32_t     nchan_matrix;
+    tHalHandle hHal = VOS_GET_HAL_CB(sapContext->pvosGCtx);
     int i = 0;
+
+    if (NULL == hHal) {
+        VOS_ASSERT(0);
+        return VOS_FALSE;
+    }
 
     switch (cbMode) {
         case PHY_SINGLE_CHANNEL_CENTERED:
@@ -998,7 +780,7 @@ sapFindTargetChannelInChannelMatrix(ptSapContext sapContext,
     for (i = 0; i < nchan_matrix; i++)
     {
         /* find the SAP channel to map the leakage matrix */
-        if (NOL_channel == pchan_matrix[i].channel)
+        if (sapContext->channel == pchan_matrix[i].channel)
         {
             target_chan_matrix = pchan_matrix[i].chan_matrix;
             break;
@@ -1007,112 +789,45 @@ sapFindTargetChannelInChannelMatrix(ptSapContext sapContext,
 
     if (NULL == target_chan_matrix)
     {
-        return VOS_FALSE;
-    } else {
-        *pTarget_chnl_mtrx = target_chan_matrix;
-        return VOS_TRUE;
-    }
-}
-
-/*
- * This function removes the channels from temp channel list that
- * (if selected as target channel) will cause leakage in one of
- * the NOL channels
- *
- * PARAMETERS
- * IN
- * sapContext        : Pointer to vos global context structure
- * cbMode            : target channel bonding mode
- * pNol              : DFS NOL
- * pTempChannelList  : the target channel list
- *
- * RETURN VALUE
- * VOS_STATUS code associated with performing the operation
- */
-
-VOS_STATUS
-sapMarkChannelsLeakingIntoNOL(ptSapContext sapContext,
-                              ePhyChanBondState cbMode,
-                              tSapDfsNolInfo *pNol,
-                              v_U8_t tempChannelListSize,
-                              v_U8_t *pTempChannelList)
-{
-    tSapTxLeakInfo *target_chan_matrix = NULL;
-#ifdef FEATURE_WLAN_CH144
-    v_U32_t         num_channel = (RF_CHAN_144 - RF_CHAN_36) + 1;
-#else
-    v_U32_t         num_channel = (RF_CHAN_140 - RF_CHAN_36) + 1;
-#endif
-    v_U32_t         i = 0;
-    v_U32_t         j = 0;
-    v_U32_t         k = 0;
-    v_U8_t          dfs_nol_channel;
-
-
-    /* traverse target_chan_matrix and */
-    for (i = 0; i < NUM_5GHZ_CHANNELS ; i++) {
-        dfs_nol_channel = pNol[i].dfs_channel_number;
-        if ( pNol[i].radar_status_flag == eSAP_DFS_CHANNEL_USABLE ||
-             pNol[i].radar_status_flag == eSAP_DFS_CHANNEL_AVAILABLE ) {
-            /* not present in NOL */
-            continue;
-        }
-        VOS_TRACE(VOS_MODULE_ID_SAP, VOS_TRACE_LEVEL_DEBUG,
-                  FL("sapdfs: processing NOL channel: %d"),
-                  dfs_nol_channel );
-        if (VOS_FALSE == sapFindTargetChannelInChannelMatrix(sapContext,
-                                                         cbMode,
-                                                         dfs_nol_channel,
-                                                         &target_chan_matrix))
-        {
-        /*
-         * should never happen, we should always find a table here,
+        /* should never happen, we should ind a table here,
          * if we don't, need a fix here!
          */
-            VOS_TRACE(VOS_MODULE_ID_SAP, VOS_TRACE_LEVEL_ERROR,
-                      FL("Couldn't find target channel matrix!"));
-            VOS_ASSERT(0);
-            return VOS_STATUS_E_FAILURE;
-        }
 
-        /*
-         * following is based on assumption that both pTempChannelList
-         * and target channel matrix are in increasing order of channelID
-         */
-        for (j = 0, k = 0; j < tempChannelListSize &&
-                           k < num_channel; ) {
-            if (pTempChannelList[j] == 0) {
-                j++;
+        VOS_TRACE(VOS_MODULE_ID_SAP, VOS_TRACE_LEVEL_ERROR,
+            FL("Shouldn't see this message! something went wrong here!"));
+
+        VOS_ASSERT(0);
+        return VOS_FALSE;
+    }
+
+    for (i = 0; i < num_channel; i++)
+    {
+        if (target_channel == target_chan_matrix[i].leak_chan)
+        {
+            if (target_chan_matrix[i].leak_lvl > SAP_TX_LEAKAGE_THRES) {
+                    VOS_TRACE(VOS_MODULE_ID_SAP, VOS_TRACE_LEVEL_ERROR,
+                        FL("Channel=%d is good"),
+                            target_channel);
+
+                    return VOS_FALSE;
             } else {
-                if (target_chan_matrix[k].leak_chan != pTempChannelList[j]) {
-                    k++;
-                } else {
-                    /* check leakage from candidate channel to NOL channel */
-                    if (target_chan_matrix[k].leak_lvl <= SAP_TX_LEAKAGE_THRES)
-                    {
-                        /*
-                         * this means that candidate channel will have bad
-                         * leakage in NOL channel, remove the candidate channel
-                         * from temp list
-                         */
-                        VOS_TRACE(VOS_MODULE_ID_SAP, VOS_TRACE_LEVEL_INFO_LOW,
-                                  FL("sapdfs: channel: %d will have bad leakage"
-                                     " due to channel: %d\n"),
-                                  dfs_nol_channel,
-                                  pTempChannelList[j]);
-                        pTempChannelList[j] = 0;
-                        break;
-                    }
-                    j++;
-                    k++;
-                }
+                VOS_TRACE(VOS_MODULE_ID_SAP, VOS_TRACE_LEVEL_ERROR,
+                    FL("Channel=%d has leakage=-%d dBm"),
+                        target_channel, (target_chan_matrix[i].leak_lvl/10));
+                return VOS_TRUE;
             }
-        } /* end of for loop checking temp channel list leakage into NOL */
-    } /* end of loop that selects each NOL */
-    return VOS_STATUS_SUCCESS;
-}
+        }
+    }
 
-#endif // end of WLAN_ENABLE_CHNL_MATRIX_RESTRICTION
+    /* should never happen, we should find a table here,
+     * if we don't, need a fix here
+     */
+    VOS_TRACE(VOS_MODULE_ID_SAP, VOS_TRACE_LEVEL_ERROR,
+        FL("Channel=%d is not in the list"),
+        target_channel);
+
+    return VOS_FALSE;
+}
 
 /*
  * This function adds availabe channel to bitmap
@@ -1332,7 +1047,6 @@ static v_U8_t sapRandomChannelSel(ptSapContext sapContext)
 {
     v_U32_t  random_byte = 0;
     v_U8_t   available_chnl_count = 0;
-    v_U8_t   valid_chnl_count = 0;
     v_U8_t   availableChannels[WNI_CFG_VALID_CHANNEL_LIST_LEN] = {0,};
     v_U8_t   target_channel = 0;
     v_BOOL_t isChannelNol = VOS_FALSE;
@@ -1345,7 +1059,6 @@ static v_U8_t sapRandomChannelSel(ptSapContext sapContext)
     tANI_U32 chanWidth;
     ePhyChanBondState cbModeCurrent;
     v_REGDOMAIN_t regDomain;
-    v_U8_t   *tempChannels = NULL;
 
     if (NULL == hHal) {
         VOS_TRACE(VOS_MODULE_ID_SAP, VOS_TRACE_LEVEL_ERROR,
@@ -1395,17 +1108,12 @@ static v_U8_t sapRandomChannelSel(ptSapContext sapContext)
     if (sapGet5GHzChannelList(sapContext))
     {
         VOS_TRACE(VOS_MODULE_ID_SAP, VOS_TRACE_LEVEL_INFO_LOW,
-                  FL("Getting 5Ghz channel list failed"));
+                  FL("Get 5Ghz channel list failed"));
         return target_channel;
     }
 
     regDomain = sapFetchRegulatoryDomain(hHal);
 
-    /*
-     * valid_chnl_count will be used to find number of valid channels
-     * after following for loop ends
-     */
-    valid_chnl_count = sapContext->SapAllChnlList.numChannel;
     /* loop to check ACS range or NOL channels */
     for (i = 0; i < sapContext->SapAllChnlList.numChannel; i++)
     {
@@ -1439,8 +1147,6 @@ static v_U8_t sapRandomChannelSel(ptSapContext sapContext)
                       FL("index:%d, Channel=%d Invalid,Japan W53 Disabled"),
                       i, channelID);
                 sapContext->SapAllChnlList.channelList[i].valid = VOS_FALSE;
-                valid_chnl_count--;
-                continue;
             }
 
             /*
@@ -1458,8 +1164,6 @@ static v_U8_t sapRandomChannelSel(ptSapContext sapContext)
                    channelID,
                    pMac->sap.SapDfsInfo.sap_operating_chan_preferred_location);
                 sapContext->SapAllChnlList.channelList[i].valid = VOS_FALSE;
-                valid_chnl_count--;
-                continue;
             }
         }
 
@@ -1475,11 +1179,9 @@ static v_U8_t sapRandomChannelSel(ptSapContext sapContext)
                  * DFS Non-Occupancy-Period which is 30 mins.
                  */
                 VOS_TRACE(VOS_MODULE_ID_SAP, VOS_TRACE_LEVEL_INFO_LOW,
-                          FL("index: %d, Channel = %d Present in NOL"),
+                          FL("index: %d, Channel = %d Present in NOL LIST"),
                           i, channelID);
                 sapContext->SapAllChnlList.channelList[i].valid = VOS_FALSE;
-                valid_chnl_count--;
-                continue;
             }
         }
 
@@ -1495,86 +1197,44 @@ static v_U8_t sapRandomChannelSel(ptSapContext sapContext)
                      FL("index: %d, Channel = %d out of ACS channel range"),
                      i, channelID);
             sapContext->SapAllChnlList.channelList[i].valid = VOS_FALSE;
-            valid_chnl_count--;
-            continue;
         }
     } /* end of check for NOL or ACS channels */
 
-    /* valid_chnl_count now have number of valid channels */
-    tempChannels = vos_mem_malloc(valid_chnl_count);
-    if (tempChannels == NULL) {
-        VOS_TRACE(VOS_MODULE_ID_SAP, VOS_TRACE_LEVEL_ERROR,
-                  FL("sapdfs: memory alloc failed"));
-        return target_channel;
-    }
-
     do
     {
-        v_U8_t   j = 0;
-#ifdef WLAN_ENABLE_CHNL_MATRIX_RESTRICTION
-        tSapDfsNolInfo *pNol = pMac->sap.SapDfsInfo.sapDfsChannelNolList;
-#endif
-
-        /* prepare temp list of just the valid channels */
-        for (i = 0; i < sapContext->SapAllChnlList.numChannel; i++) {
-            if (sapContext->SapAllChnlList.channelList[i].valid) {
-                VOS_TRACE(VOS_MODULE_ID_SAP, VOS_TRACE_LEVEL_ERROR,
-                          FL("sapdfs: Adding Channel = %d to temp List"),
-                          sapContext->SapAllChnlList.channelList[i].channel);
-                tempChannels[j++] =
-                    sapContext->SapAllChnlList.channelList[i].channel;
-            }
-        }
-
-#ifdef WLAN_ENABLE_CHNL_MATRIX_RESTRICTION
-        VOS_TRACE(VOS_MODULE_ID_SAP, VOS_TRACE_LEVEL_ERROR,
-                  FL("sapdfs: Processing temp channel list against NOL."));
-        if (VOS_STATUS_SUCCESS != sapMarkChannelsLeakingIntoNOL(sapContext,
-                                                               cbModeCurrent,
-                                                               pNol,
-                                                               valid_chnl_count,
-                                                               tempChannels)) {
-            vos_mem_free(tempChannels);
-            return target_channel;
-        }
-#endif
-        vos_mem_zero(availableChannels, sizeof(availableChannels));
         vos_mem_zero(&channelBitmap, sizeof(channelBitmap));
         channelBitmap.chanBondingSet[0].startChannel = 36;
         channelBitmap.chanBondingSet[1].startChannel = 52;
         channelBitmap.chanBondingSet[2].startChannel = 100;
         channelBitmap.chanBondingSet[3].startChannel = 116;
-        channelBitmap.chanBondingSet[3].startChannel = 132;
         channelBitmap.chanBondingSet[4].startChannel = 149;
+        vos_mem_zero(availableChannels, sizeof(availableChannels));
         /* now loop through whatever is left of channel list */
-        VOS_TRACE(VOS_MODULE_ID_SAP, VOS_TRACE_LEVEL_ERROR,
-                  FL("sapdfs: Moving temp channel list to final."));
-        for (i = 0; i < valid_chnl_count; i++ ){
-            /*
-             * add channel from temp channel list to bitmap or fianl
-             * channel list (in case of 20MHz width)
-             */
-            if (tempChannels[i] != 0) {
-                VOS_TRACE(VOS_MODULE_ID_SAP, VOS_TRACE_LEVEL_DEBUG,
-                          FL("sapdfs: processing channel: %d "),
-                          tempChannels[i]);
-                /* for 20MHz, directly create available channel list */
-                if (cbModeCurrent == PHY_SINGLE_CHANNEL_CENTERED) {
-                    VOS_TRACE(VOS_MODULE_ID_SAP,
-                              VOS_TRACE_LEVEL_DEBUG,
-                              FL("sapdfs: Channel=%d added to available list"),
-                              tempChannels[i]);
-                    availableChannels[available_chnl_count++] =
-                        tempChannels[i];
-                } else {
-                    VOS_TRACE(VOS_MODULE_ID_SAP,
-                              VOS_TRACE_LEVEL_DEBUG,
-                              FL("sapdfs: Channel=%d added to bitmap"),
-                              tempChannels[i]);
-                    sapSetBitmap(&channelBitmap, tempChannels[i]);
+        for (i = 0; i < sapContext->SapAllChnlList.numChannel; i++ ){
+            /* check the channel matrix */
+            if (sapContext->SapAllChnlList.channelList[i].valid) {
+                channelID = sapContext->SapAllChnlList.channelList[i].channel;
+                /* if leakage for this channel is within limits */
+                if (VOS_FALSE == sapChannelMatrixCheck(sapContext,
+                                                       cbModeCurrent,
+                                                       channelID)) {
+                    /* for 20MHz, directly create available channel list */
+                    if (cbModeCurrent == PHY_SINGLE_CHANNEL_CENTERED) {
+                        VOS_TRACE(VOS_MODULE_ID_SAP,
+                                  VOS_TRACE_LEVEL_INFO_LOW,
+                                  FL("Channel=%d added to available list"),
+                                  channelID);
+                        availableChannels[available_chnl_count++] = channelID;
+                    } else {
+                        VOS_TRACE(VOS_MODULE_ID_SAP,
+                                  VOS_TRACE_LEVEL_INFO_LOW,
+                                  FL("Channel=%d added to bitmap"),
+                                  channelID);
+                        sapSetBitmap(&channelBitmap, channelID);
+                    }
                 }
             }
-        }
+        } /* end of loop to check against DFS leakage channel matrix */
 
         /* if 40 MHz or 80 MHz, populate available channel list from bitmap */
         if (cbModeCurrent != PHY_SINGLE_CHANNEL_CENTERED) {
@@ -1652,7 +1312,6 @@ static v_U8_t sapRandomChannelSel(ptSapContext sapContext)
         break;
     } while(1); /* this loop will iterate at max 3 times */
 
-    vos_mem_free(tempChannels);
     return target_channel;
 }
 
@@ -2024,7 +1683,7 @@ sapGotoChannelSel
     }
 
 #ifdef WLAN_FEATURE_MBSSID
-    if (vos_concurrent_sap_sessions_running()) {
+    if (vos_concurrent_beaconing_sessions_running()) {
         v_U16_t con_sap_ch = sme_GetConcurrentOperationChannel(hHal);
 
         if (con_sap_ch && sapContext->channel == AUTO_CHANNEL_SELECT) {
@@ -2768,7 +2427,14 @@ sapSignalHDDevent
             sapApAppEvent.sapevt.sapDfsNolInfo.pDfsList =
                 (v_PVOID_t)(&pMac->sap.SapDfsInfo.sapDfsChannelNolList[0]);
             break;
-
+        case eSAP_ECSA_CHANGE_CHAN_IND:
+            VOS_TRACE( VOS_MODULE_ID_SAP, VOS_TRACE_LEVEL_INFO_HIGH,
+                    "In %s, SAP event callback event = %s",
+                    __func__, "eSAP_ECSA_CHANGE_CHAN_IND");
+            sapApAppEvent.sapHddEventCode = eSAP_ECSA_CHANGE_CHAN_IND;
+            sapApAppEvent.sapevt.sap_chan_cng_ind.new_chan =
+                                           pCsrRoamInfo->target_channel;
+            break;
         default:
             VOS_TRACE( VOS_MODULE_ID_SAP, VOS_TRACE_LEVEL_ERROR, "In %s, SAP Unknown callback event = %d",
                        __func__,sapHddevent);
@@ -2808,7 +2474,8 @@ ptSapContext sap_find_valid_concurrent_session (tHalHandle hHal)
 
     for (intf = 0; intf < SAP_MAX_NUM_SESSION; intf++)
     {
-         if (VOS_STA_SAP_MODE == pMac->sap.sapCtxList [intf].sapPersona &&
+         if (((VOS_STA_SAP_MODE == pMac->sap.sapCtxList [intf].sapPersona) ||
+             (VOS_P2P_GO_MODE == pMac->sap.sapCtxList [intf].sapPersona)) &&
              pMac->sap.sapCtxList[intf].pSapContext != NULL)
          {
              return pMac->sap.sapCtxList[intf].pSapContext;
@@ -2872,20 +2539,14 @@ eHalStatus sap_CloseSession(tHalHandle hHal,
          */
          VOS_TRACE(VOS_MODULE_ID_SAP, VOS_TRACE_LEVEL_INFO_MED,
          "sapdfs: no session are valid, so clearing dfs global structure");
-        /*
-         * CAC timer will be initiated and started only when SAP starts on
-         * DFS channel and it will be stopped and destroyed immediately once the
-         * radar detected or timedout. So as per design CAC timer should be
-         * destroyed after stop.
-         */
 
         if (pMac->sap.SapDfsInfo.is_dfs_cac_timer_running)
         {
             vos_timer_stop(&pMac->sap.SapDfsInfo.sap_dfs_cac_timer);
             pMac->sap.SapDfsInfo.is_dfs_cac_timer_running = 0;
-            vos_timer_destroy(&pMac->sap.SapDfsInfo.sap_dfs_cac_timer);
         }
         pMac->sap.SapDfsInfo.cac_state = eSAP_DFS_DO_NOT_SKIP_CAC;
+        vos_timer_destroy(&pMac->sap.SapDfsInfo.sap_dfs_cac_timer);
         sap_CacResetNotify(hHal);
         vos_mem_zero(&pMac->sap, sizeof(pMac->sap));
     }
@@ -2915,7 +2576,8 @@ void sap_CacResetNotify(tHalHandle hHal)
     {
          ptSapContext pSapContext =
                     (ptSapContext)pMac->sap.sapCtxList [intf].pSapContext;
-         if (VOS_STA_SAP_MODE == pMac->sap.sapCtxList [intf].sapPersona &&
+         if (((VOS_STA_SAP_MODE == pMac->sap.sapCtxList [intf].sapPersona) ||
+             (VOS_P2P_GO_MODE == pMac->sap.sapCtxList [intf].sapPersona)) &&
              pMac->sap.sapCtxList [intf].pSapContext != NULL)
          {
               pSapContext->isCacStartNotified = VOS_FALSE;
@@ -2947,7 +2609,8 @@ VOS_STATUS sap_CacStartNotify(tHalHandle hHal)
     {
          ptSapContext pSapContext =
                     (ptSapContext)pMac->sap.sapCtxList [intf].pSapContext;
-         if (VOS_STA_SAP_MODE == pMac->sap.sapCtxList [intf].sapPersona &&
+         if (((VOS_STA_SAP_MODE == pMac->sap.sapCtxList [intf].sapPersona) ||
+             (VOS_P2P_GO_MODE == pMac->sap.sapCtxList [intf].sapPersona)) &&
              pMac->sap.sapCtxList [intf].pSapContext != NULL &&
              (VOS_FALSE == pSapContext->isCacStartNotified))
          {
@@ -3000,7 +2663,8 @@ VOS_STATUS sap_CacEndNotify(tHalHandle hHal, tCsrRoamInfo *roamInfo)
      {
            ptSapContext pSapContext =
                (ptSapContext)pMac->sap.sapCtxList [intf].pSapContext;
-           if (VOS_STA_SAP_MODE == pMac->sap.sapCtxList [intf].sapPersona &&
+           if (((VOS_STA_SAP_MODE == pMac->sap.sapCtxList [intf].sapPersona) ||
+               (VOS_P2P_GO_MODE == pMac->sap.sapCtxList [intf].sapPersona)) &&
                pMac->sap.sapCtxList [intf].pSapContext != NULL &&
                (VOS_FALSE == pSapContext->isCacEndNotified))
            {
@@ -3331,7 +2995,7 @@ sapFsm
                   * ACS check if AP1 ACS resulting channel is DFS and if yes
                   * override AP2 ACS scan result with AP1 DFS channel
                   */
-                 if (vos_concurrent_sap_sessions_running()) {
+                 if (vos_concurrent_beaconing_sessions_running()) {
                      v_U16_t con_ch;
 
                      con_ch = sme_GetConcurrentOperationChannel(hHal);
@@ -3412,8 +3076,10 @@ sapFsm
                 for (intf = 0; intf < SAP_MAX_NUM_SESSION; intf++)
                 {
                      ptSapContext sapContext;
-                     if (VOS_STA_SAP_MODE ==
-                           pMac->sap.sapCtxList[intf].sapPersona &&
+                     if (((VOS_STA_SAP_MODE ==
+                           pMac->sap.sapCtxList[intf].sapPersona) ||
+                          (VOS_P2P_GO_MODE ==
+                           pMac->sap.sapCtxList[intf].sapPersona)) &&
                            pMac->sap.sapCtxList [intf].pSapContext != NULL)
                      {
                          sapContext = pMac->sap.sapCtxList [intf].pSapContext;
@@ -3609,7 +3275,10 @@ sapFsm
                     {
                          ptSapContext pSapContext;
 
-                        if (VOS_STA_SAP_MODE == pMac->sap.sapCtxList [intf].sapPersona &&
+                        if (((VOS_STA_SAP_MODE ==
+                                pMac->sap.sapCtxList [intf].sapPersona) ||
+                             (VOS_P2P_GO_MODE ==
+                                pMac->sap.sapCtxList [intf].sapPersona)) &&
                           pMac->sap.sapCtxList [intf].pSapContext != NULL )
                         {
                             pSapContext = pMac->sap.sapCtxList [intf].pSapContext;
@@ -3910,9 +3579,11 @@ sapSortMacList(v_MACADDR_t *macList, v_U8_t size)
     v_MACADDR_t temp;
     v_SINT_t nRes = -1;
 
-    if ((NULL == macList) || (size > MAX_ACL_MAC_ADDRESS)) {
-        VOS_TRACE(VOS_MODULE_ID_SAP, VOS_TRACE_LEVEL_INFO_HIGH,
-                  FL("either buffer is NULL or size = %d is more."), size);
+    if ((NULL == macList) || (size >= MAX_ACL_MAC_ADDRESS))
+    {
+        VOS_TRACE( VOS_MODULE_ID_SAP, VOS_TRACE_LEVEL_INFO_HIGH,
+                      "In %s, either buffer is NULL or size = %d is more."
+                      , __func__, size);
         return;
     }
 
@@ -3937,13 +3608,6 @@ sapSearchMacList(v_MACADDR_t *macList, v_U8_t num_mac, v_U8_t *peerMac, v_U8_t *
     v_SINT_t nRes = -1;
     v_S7_t nStart = 0, nEnd, nMiddle;
     nEnd = num_mac - 1;
-
-    if ((NULL == macList) || (num_mac > MAX_ACL_MAC_ADDRESS)) {
-        VOS_TRACE(VOS_MODULE_ID_SAP, VOS_TRACE_LEVEL_INFO_HIGH,
-                  FL("either buffer is NULL or size = %d is more."),
-                  num_mac);
-        return eSAP_FALSE;
-    }
 
     while (nStart <= nEnd)
     {
@@ -3980,14 +3644,6 @@ sapAddMacToACL(v_MACADDR_t *macList, v_U8_t *size, v_U8_t *peerMac)
 {
     v_SINT_t nRes = -1;
     int i;
-
-    if ((NULL == macList) || (*size > MAX_ACL_MAC_ADDRESS)) {
-        VOS_TRACE(VOS_MODULE_ID_SAP, VOS_TRACE_LEVEL_INFO_HIGH,
-                  FL("either buffer is NULL or size = %d is incorrect."),
-                  *size);
-        return;
-    }
-
     VOS_TRACE( VOS_MODULE_ID_SAP, VOS_TRACE_LEVEL_INFO_HIGH,"add acl entered");
     for (i=((*size)-1); i>=0; i--)
     {
@@ -4017,13 +3673,7 @@ sapRemoveMacFromACL(v_MACADDR_t *macList, v_U8_t *size, v_U8_t index)
     /* return if the list passed is empty. Ideally this should never happen since this funcn is always
        called after sapSearchMacList to get the index of the mac addr to be removed and this will
        only get called if the search is successful. Still no harm in having the check */
-    if ((NULL == macList) || (*size == 0) || (*size > MAX_ACL_MAC_ADDRESS)) {
-        VOS_TRACE(VOS_MODULE_ID_SAP, VOS_TRACE_LEVEL_INFO_HIGH,
-                  FL("either buffer is NULL or size = %d is incorrect"),
-                  *size);
-        return;
-    }
-
+    if (macList==NULL) return;
     for (i=index; i<((*size)-1); i++)
     {
         /* Move mac addresses starting from "index" passed one index up to delete the void
