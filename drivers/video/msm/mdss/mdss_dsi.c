@@ -23,6 +23,7 @@
 #include <linux/regulator/consumer.h>
 #include <linux/leds-qpnp-wled.h>
 #include <linux/clk.h>
+#include <linux/lcd_notify.h>
 #include <linux/uaccess.h>
 #include <linux/leds.h>
 
@@ -1558,6 +1559,7 @@ static int mdss_dsi_event_handler(struct mdss_panel_data *pdata,
 							pdata);
 		break;
 	case MDSS_EVENT_UNBLANK:
+		lcd_notifier_call_chain(LCD_EVENT_ON_START, NULL);
 		mdss_dsi_get_hw_revision(ctrl_pdata);
 		if (ctrl_pdata->refresh_clk_rate)
 			rc = mdss_dsi_clk_refresh(pdata);
@@ -1569,6 +1571,7 @@ static int mdss_dsi_event_handler(struct mdss_panel_data *pdata,
 		ctrl_pdata->ctrl_state |= CTRL_STATE_MDP_ACTIVE;
 		if (ctrl_pdata->on_cmds.link_state == DSI_HS_MODE)
 			rc = mdss_dsi_unblank(pdata);
+		lcd_notifier_call_chain(LCD_EVENT_ON_END, NULL);
 		pdata->panel_info.esd_rdy = true;
 #ifdef CONFIG_STATE_NOTIFIER
 		if (!use_fb_notifier)
@@ -1576,6 +1579,7 @@ static int mdss_dsi_event_handler(struct mdss_panel_data *pdata,
 #endif
 		break;
 	case MDSS_EVENT_BLANK:
+		lcd_notifier_call_chain(LCD_EVENT_OFF_START, NULL);
 		power_state = (int) (unsigned long) arg;
 		if (ctrl_pdata->off_cmds.link_state == DSI_HS_MODE)
 			rc = mdss_dsi_blank(pdata, power_state);
@@ -1591,6 +1595,7 @@ static int mdss_dsi_event_handler(struct mdss_panel_data *pdata,
 		if (!use_fb_notifier)
 			state_suspend();
 #endif
+		lcd_notifier_call_chain(LCD_EVENT_OFF_END, NULL);
 		break;
 	case MDSS_EVENT_CONT_SPLASH_FINISH:
 		if (ctrl_pdata->off_cmds.link_state == DSI_LP_MODE)
