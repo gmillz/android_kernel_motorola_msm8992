@@ -43,6 +43,8 @@
 
 DEFINE_LED_TRIGGER_GLOBAL(bl_led_trigger);
 
+bool mdss_screen_on = true;
+
 void mdss_dsi_panel_pwm_cfg(struct mdss_dsi_ctrl_pdata *ctrl)
 {
 	if (ctrl->pwm_pmi)
@@ -829,6 +831,11 @@ static int mdss_dsi_panel_on(struct mdss_panel_data *pdata)
 		return -EINVAL;
 	}
 
+#ifdef CONFIG_POWERSUSPEND
+	set_power_suspend_state_panel_hook(POWER_SUSPEND_INACTIVE);
+#endif
+
+	mdss_screen_on = true;
 	pinfo = &pdata->panel_info;
 	ctrl = container_of(pdata, struct mdss_dsi_ctrl_pdata,
 				panel_data);
@@ -952,6 +959,8 @@ static int mdss_dsi_panel_off(struct mdss_panel_data *pdata)
 	else if (ctrl->off_cmds.cmd_cnt)
 		mdss_dsi_panel_cmds_send(ctrl, &ctrl->off_cmds);
 
+	mdss_screen_on = false;
+
 end:
 	pinfo->blank_state = MDSS_PANEL_BLANK_BLANK;
 
@@ -964,6 +973,9 @@ end:
 #endif
 #ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
 	s2w_scr_suspended = true;
+#endif
+#ifdef CONFIG_POWERSUSPEND
+	set_power_suspend_state_panel_hook(POWER_SUSPEND_ACTIVE);
 #endif
 	return 0;
 }
