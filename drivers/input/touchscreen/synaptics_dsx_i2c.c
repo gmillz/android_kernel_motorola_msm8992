@@ -6701,8 +6701,8 @@ static int synaptics_rmi4_suspend(struct device *dev)
 		return 0;
 
 #ifdef CONFIG_TOUCHSCREEN_PREVENT_SLEEP
-#ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
-	if (dt2w_switch > 0) {
+#if defined(CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE)
+	if (dt2w_switch) {
 #endif
 		pr_info("suspend avoided!\n");
 
@@ -6710,7 +6710,7 @@ static int synaptics_rmi4_suspend(struct device *dev)
 		synaptics_dsx_sensor_state(rmi4_data, STATE_PREVENT_SLEEP);
 
 		return 0;
-#ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE                                                       
+#if defined(CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE) || defined(CONFIG_TOUCHSCREEN_SWEEP2WAKE)
 	}
 #endif
 #endif
@@ -6897,6 +6897,25 @@ static int __init synaptics_rmi4_init(void)
 
  /**
  * synaptics_rmi4_exit()
+ *
+ * Called by the kernel when the driver is unloaded.
+ *
+ * This funtion unregisters the driver from the I2C subsystem.
+ *
+ */
+static void __exit synaptics_rmi4_exit(void)
+{
+	i2c_del_driver(&synaptics_rmi4_driver);
+}
+
+module_init(synaptics_rmi4_init);
+module_exit(synaptics_rmi4_exit);
+
+MODULE_AUTHOR("Synaptics, Inc.");
+MODULE_DESCRIPTION("Synaptics DSX I2C Touch Driver");
+MODULE_LICENSE("GPL v2");
+MODULE_VERSION(SYNAPTICS_DSX_DRIVER_VERSION);
+_exit()
  *
  * Called by the kernel when the driver is unloaded.
  *
