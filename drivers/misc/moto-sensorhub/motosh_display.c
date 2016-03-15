@@ -46,9 +46,6 @@
 #ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
 #include <linux/input/doubletap2wake.h>
 #endif
-#ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
-#include <linux/input/sweep2wake.h>
-#endif
 #endif
 
 struct qd_trace_event_t {
@@ -263,11 +260,8 @@ int motosh_display_handle_touch_locked(struct motosh_data *ps_motosh)
 {
 	char *envp[2];
 #ifdef CONFIG_TOUCHSCREEN_PREVENT_SLEEP
-#if defined(CONFIG_TOUCHSCREEN_SWEEP2WAKE) || defined(CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE)
+#if defined(CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE)
         bool prevent_sleep = false;
-#endif
-#if defined(CONFIG_TOUCHSCREEN_SWEEP2WAKE)
-        prevent_sleep = (s2w_switch > 0) && (s2w_s2sonly == 0);
 #endif
 #if defined(CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE)
         prevent_sleep = prevent_sleep || (dt2w_switch > 0);
@@ -283,10 +277,10 @@ int motosh_display_handle_touch_locked(struct motosh_data *ps_motosh)
 		"Sending uevent, MOTOSH TOUCH wake\n");
 
 #ifdef CONFIG_TOUCHSCREEN_PREVENT_SLEEP
-#if defined(CONFIG_TOUCHSCREEN_SWEEP2WAKE) || defined(CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE)
+#if defined(CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE)
 	/* Dirty hack to prevent touchpanel lockup */
 	if (prevent_sleep)
-		s2w_switch = s2w_s2sonly = dt2w_switch = 0;
+		dt2w_switch = 0;
 #endif
 #endif
 
